@@ -1,0 +1,1 @@
+- vue-class-component is working, but without the support of vue-property-decorator yet
