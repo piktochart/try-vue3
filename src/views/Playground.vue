@@ -4,17 +4,27 @@
     <Teleport to="#teleport-target">
       <h1>Playground</h1>
     </Teleport>
+    <h2>Test List</h2>
     <list :lists="lists" />
+    <h2>Test Modal Input</h2>
+    <div>
+      Visible: <input type="checkbox" v-model="modalVisible" />
+      <br />
+      Value: <input type="text" v-model="modalValue" />
+    </div>
+    <modal-input v-model:visible="modalVisible" v-model:value="modalValue" />
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
 import List from "@/components/List.vue";
+import ModalInput from "@/components/ModalInput.vue";
 
 export default defineComponent({
   name: "Playground",
   components: {
-    List
+    List,
+    ModalInput
   },
   data() {
     return {
@@ -31,7 +41,9 @@ export default defineComponent({
         "MV",
         "MP",
         "Jun3"
-      ]
+      ],
+      modalVisible: false,
+      modalValue: ""
     };
   }
 });

@@ -24,3 +24,9 @@ https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af
 
 - Good news, finally Vue allows multiple root nodes!
 - Ignore the linting, I guess it's still outdated or following the Vue2 rules
+
+# Multiple v-model
+
+- Considered a BREAKING CHANGE! Because the `model` option is deprecated
+- To emit the changes back to the parent component, must use `$emit('update:propName', value)`
+- Ignore the linting, I guess it's still outdated or following the Vue2 rules
