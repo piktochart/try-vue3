@@ -1,3 +1,10 @@
+# Install Vue plugin from the createApp
+
+- BREAKING CHANGE! Vue.use is deprecated
+- Can only install app from the object returned from `createApp`
+- A good sign to keep the immutability of the original Vue class
+- BREAKING CHANGE! You may not able to run Vue plugin functionality from the script that's not under Vue instance
+
 # Using Class-based Component
 
 - NOT STABLE or FINALIZED yet
