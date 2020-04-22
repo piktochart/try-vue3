@@ -20,3 +20,7 @@
 https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af5
 - And seems like, still got bugs. Open challenge for you to help them ;)
 
+# Multiple Root Nodes
+
+- Good news, finally Vue allows multiple root nodes!
+- Ignore the linting, I guess it's still outdated or following the Vue2 rules
