@@ -37,3 +37,8 @@ https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af
 - Considered a BREAKING CHANGE! Because the `model` option is deprecated
 - To emit the changes back to the parent component, must use `$emit('update:propName', value)`
 - Ignore the linting, I guess it's still outdated or following the Vue2 rules
+
+# Suspense
+
+- A wrapper component that supports the new composition API and handling the case of asynchronous setup
+- Show the #fallback template as the default one while setup() is still not returning the values

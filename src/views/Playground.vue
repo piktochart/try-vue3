@@ -13,18 +13,29 @@
       Value: <input type="text" v-model="modalValue" />
     </div>
     <modal-input v-model:visible="modalVisible" v-model:value="modalValue" />
+    <h2>Test Load User</h2>
+    <Suspense>
+      <template #default>
+        <load-user />
+      </template>
+      <template #fallback>
+        Loading...
+      </template>
+    </Suspense>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
 import List from "@/components/List.vue";
 import ModalInput from "@/components/ModalInput.vue";
+import LoadUser from "@/components/LoadUser.vue";
 
 export default defineComponent({
   name: "Playground",
   components: {
     List,
-    ModalInput
+    ModalInput,
+    LoadUser
   },
   data() {
     return {

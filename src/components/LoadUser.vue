@@ -1,13 +1,18 @@
 <template>
-  <div v-for="list in lists" :key="list" class="list">{{ list }}</div>
+  <h3>Bonjour, {{ user }}!</h3>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "List",
-  props: {
-    lists: Array
+  name: "LoadUser",
+  async setup() {
+    const user = await new Promise(res => {
+      setTimeout(() => res("Albert"), 5000);
+    });
+    return {
+      user
+    };
   }
 });
 </script>
