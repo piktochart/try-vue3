@@ -21,7 +21,7 @@
 
 - VuePortal natively works in Vue3 without any plugin
 - But, I couldn't reproduce it yet.... in the current Vue beta :(
-- Okay, they have renamed it from <Portal> to <Teleport>, to avoid potential conflict with native <portal> component
+- Turns out, they have renamed it from <Portal> to <Teleport>, to avoid potential conflict with native <portal> component
 - And, the prop name is renamed from `target` to `to`.
 - Since no documentation reported about this yet, I figure it out all thanks to their commit history here:
 https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af5
@@ -46,4 +46,9 @@ https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af
 # $on Deprecated
 
 - `vm.$on` is undefined
-- Seems not official yet as I couldn't found any documentation that states this
+- Officially introduced in the RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0020-events-api-change.md
+
+# Vue.nextTick deprecated
+
+- In Vue 3 nextTick will be removed from the VM instance
+- Users will have to migrate over to importing it from Vue directly `import { nextTick } from 'vue'`.
