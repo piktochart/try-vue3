@@ -6,6 +6,8 @@ Most of the changes are adopted from [the RFC](https://github.com/vuejs/rfcs), s
 
 # New Feature & Improvement
 
+These are the new feature and improvement introduced in the Vue 3. There is no breaking changes in the list.
+
 ## No Reactivity Caveats
 
 - To update an object in the data or store, no need to use `Vue.set` anymore, 
@@ -29,12 +31,14 @@ RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0025-teleport.md
 - Good news, finally Vue allows multiple root nodes!
 - Ignore the linting, I guess it's still outdated or following the Vue2 rules
 
-# Suspense
+## Suspense
 
 - A wrapper component that supports the new composition API and handling the case of asynchronous setup
 - Show the #fallback template as the default one while setup() is still not returning the values
 
 # API Changes
+
+These are the changes in the Vue 3 that likely break the application since the API interface has changed.
 
 ## Install Vue plugin from the createApp
 
@@ -46,24 +50,28 @@ RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0025-teleport.md
 
 ## Multiple v-model
 
-- BREAKING CHANGE! Because the `model` option is deprecated
+- BREAKING CHANGE! The `model` option in the vue object is deprecated
 - To emit the changes back to the parent component, must use `$emit('update:propName', value)`
 - Ignore the linting, I guess it's still outdated or following the Vue2 rules
 - RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0005-replace-v-bind-sync-with-v-model-argument.md
 
 ## vm.$on deprecated
 
+- BREAKING CHANGE! A component cannot create its own event listener anymore
 - `vm.$on` is undefined, which means the concept of Event Bus is also deprecated
 - you may use 3rd party library to handle pubsub pattern or Event Bus
 - RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0020-events-api-change.md
 
 ## filter deprecated
 
+- BREAKING CHANGE! Existing component that uses `filter` might break
 - performance wise, filter & method are the same
 - replace filter usage to use method instead
 - RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0015-remove-filters.md
 
 # Unconfirmed or WIP
+
+These are the changes that aren't released yet, or not stable yet. They're good to know to identify what will come or expected next. Also they are a potential challenge you can take to help improve the Vue libraries.
 
 ## Using Class-based Component
 
