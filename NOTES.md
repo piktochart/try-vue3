@@ -42,3 +42,8 @@ https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af
 
 - A wrapper component that supports the new composition API and handling the case of asynchronous setup
 - Show the #fallback template as the default one while setup() is still not returning the values
+
+# $on Deprecated
+
+- `vm.$on` is undefined
+- Seems not official yet as I couldn't found any documentation that states this
