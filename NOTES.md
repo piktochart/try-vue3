@@ -66,8 +66,12 @@ RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0025-teleport.md
 
 ## Using Class-based Component
 
-- NOT STABLE or FINALIZED yet
+- Not stable or finalized yet
 - vue-class-component is working, but without the support of vue-property-decorator yet
+
+## Using `shallowMount` from `@vue/test-utils`
+
+- Not available yet in the version `@vue/test-utils@2.0.0-alpha.1"`
 
 ## Vue.nextTick deprecated
 
