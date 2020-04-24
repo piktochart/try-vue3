@@ -8,10 +8,11 @@ Most of the changes are adopted from [the RFC](https://github.com/vuejs/rfcs), s
 
 ## No Reactivity Caveats
 
-- No need to use `Vue.set` anymore
-- Tried on `piktodev` page `test_component` which is still using Vue2, and not finding the reactivity caveats
-- Yet I recalled some of the devs faced this caveats before
+- To update an object in the data or store, no need to use `Vue.set` anymore, 
+- I did recalled some of the devs faced this caveats before where they must use `Vue.set` to update the data
+- But, tried on the app that using the latest Vue2, and not finding the reactivity caveats issue
 - Anyway, good to know that Vue3 has resolved this caveats
+- Article Reference: https://www.vuemastery.com/blog/Reactivity-Vue2-vs-Vue3/
 
 ## Vue Portal Target (renamed to Teleport)
 
