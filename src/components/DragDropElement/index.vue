@@ -5,6 +5,7 @@
       <select v-model="selectedMode">
         <option value="vue">Vue</option>
         <option value="native">Native</option>
+        <option value="vue-native">Vue with Native</option>
       </select>
       <div>
         Number of Block(s) :
@@ -19,7 +20,7 @@
       <div>Debug Average (ms) {{ debugAverage }}</div>
     </div>
 
-    <template v-if="selectedMode === 'vue'">
+    <template v-if="selectedMode === 'vue' || selectedMode === 'vue-native'">
       <div v-for="blockId in blockList" :key="blockId" class="block">
         <template v-for="elementId in blocks[blockId].elements">
           <div
@@ -27,7 +28,6 @@
             :id="`element-${elementId}`"
             :style="elementStyle(elements[elementId])"
             class="element"
-            @mousedown.prevent="mouseDownElement"
           >
             <img src="~./test.jpg" />
           </div>
@@ -58,7 +58,8 @@ interface Blocks {
 type BlockList = Array<Block["id"]>;
 
 interface Element {
-  id: string;
+  id?: string;
+  elm?: HTMLElement;
   x: number;
   y: number;
 }
@@ -111,6 +112,8 @@ export default class DragDropElement extends Vue {
   private performanceFlag = 0;
   private debugTime: number[] = [];
 
+  private initialCoord: { x?: number; y?: number } = {};
+
   get debugAverage() {
     const sum = this.debugTime.reduce(
       (total: number, val: number) => total + val,
@@ -122,11 +125,20 @@ export default class DragDropElement extends Vue {
   private async initMode() {
     switch (this.selectedMode) {
       case "vue":
+        await this.$nextTick();
         this.generateElement();
+        await this.$nextTick();
+        this.attachVueEvent();
         break;
       case "native":
         await this.$nextTick();
         this.nativeDragDropScript();
+        break;
+      case "vue-native":
+        await this.$nextTick();
+        this.generateElement();
+        await this.$nextTick();
+        this.attachNativeEvent();
         break;
     }
   }
@@ -167,6 +179,24 @@ export default class DragDropElement extends Vue {
     };
   }
 
+  private attachVueEvent() {
+    document.querySelectorAll(".element").forEach(element => {
+      element.addEventListener("mousedown", e => {
+        e.preventDefault();
+        this.mouseDownElement(e as MouseEvent);
+      });
+    });
+  }
+
+  private attachNativeEvent() {
+    document.querySelectorAll(".element").forEach(element => {
+      element.addEventListener("mousedown", e => {
+        e.preventDefault();
+        this.onMouseDown(e as MouseEvent);
+      });
+    });
+  }
+
   private mouseDownElement(e: MouseEvent) {
     const target = e.target as HTMLDivElement;
     const elementId = target && target.id.replace("element-", "");
@@ -189,10 +219,25 @@ export default class DragDropElement extends Vue {
         x: e.pageX - this.mouseDownCoord.x,
         y: e.pageY - this.mouseDownCoord.y
       };
-      this.elements[this.chosenElement.id].x =
-        this.chosenElement.x + moveCoordinate.x;
-      this.elements[this.chosenElement.id].y =
-        this.chosenElement.y + moveCoordinate.y;
+      const id = this.chosenElement.id;
+      if (id) {
+        this.elements[id].x = this.chosenElement.x + moveCoordinate.x;
+        this.elements[id].y = this.chosenElement.y + moveCoordinate.y;
+      }
+    }
+  }
+
+  private onDoneEdit() {
+    if (this.selectedMode === "vue-native") {
+      const chosenElement = this.chosenElement;
+      const elm = chosenElement && chosenElement.elm;
+      if (chosenElement && elm) {
+        const id = elm.id.replace("element-", "");
+        if (id) {
+          this.elements[id].x = chosenElement.x;
+          this.elements[id].y = chosenElement.y;
+        }
+      }
     }
   }
 
@@ -224,51 +269,8 @@ export default class DragDropElement extends Vue {
     wrapper.innerHTML = "";
     const blockCount = this.blockCount;
     const elementCount = this.elementCount;
-    const initialCoord: { x?: number; y?: number } = {};
-    const chosenElement: { x?: number; y?: number; elm?: HTMLElement } = {};
-
-    function onMouseMove(e: MouseEvent) {
-      if (
-        initialCoord.x &&
-        initialCoord.y &&
-        chosenElement.elm &&
-        chosenElement.x &&
-        chosenElement.y
-      ) {
-        this.debugFlag();
-        this.debugInit();
-        const updateX = e.pageX - initialCoord.x;
-        const updateY = e.pageY - initialCoord.y;
-        chosenElement.elm.style.left = chosenElement.x + updateX + "px";
-        chosenElement.elm.style.top = chosenElement.y + updateY + "px";
-      }
-    }
-
-    function onMouseUp() {
-      initialCoord.x = undefined;
-      initialCoord.y = undefined;
-      chosenElement.x = undefined;
-      chosenElement.y = undefined;
-      chosenElement.elm = undefined;
-      document.removeEventListener("mousemove", onMouseMove.bind(this));
-      document.removeEventListener("mouseup", onMouseUp.bind(this));
-    }
-
-    function onMouseDown(e: MouseEvent) {
-      e.preventDefault();
-      const target = e.target as HTMLElement;
-      if (target.style.top && target.style.left) {
-        initialCoord.x = e.pageX;
-        initialCoord.y = e.pageY;
-        chosenElement.x = parseInt(target.style.left, 10);
-        chosenElement.y = parseInt(target.style.top, 10);
-        chosenElement.elm = target as HTMLElement;
-        document.addEventListener("mousemove", onMouseMove.bind(this));
-        document.addEventListener("mouseup", onMouseUp.bind(this));
-      }
-      this.debugReset();
-      this.debugInit();
-    }
+    this.initialCoord = {};
+    this.chosenElement = undefined;
 
     for (let i = 0; i < blockCount; i++) {
       const newBlockId = this.getId();
@@ -284,13 +286,60 @@ export default class DragDropElement extends Vue {
         elementDiv.id = "element-" + newElementId;
         elementDiv.setAttribute("class", "element");
         elementDiv.setAttribute("style", `left: ${x}px; top: ${y}px`);
-        elementDiv.addEventListener("mousedown", onMouseDown.bind(this));
+        elementDiv.addEventListener("mousedown", this.onMouseDown);
         const image = document.createElement("img");
         image.src = imageUrl;
         elementDiv.appendChild(image);
         blockDiv.appendChild(elementDiv);
       }
     }
+  }
+
+  private onMouseMove(e: MouseEvent) {
+    if (
+      this.initialCoord.x &&
+      this.initialCoord.y &&
+      this.chosenElement &&
+      this.chosenElement.elm &&
+      this.chosenElement.x &&
+      this.chosenElement.y
+    ) {
+      this.debugFlag();
+      this.debugInit();
+      const updateX = e.pageX - this.initialCoord.x;
+      const updateY = e.pageY - this.initialCoord.y;
+      this.chosenElement.elm.style.left = this.chosenElement.x + updateX + "px";
+      this.chosenElement.elm.style.top = this.chosenElement.y + updateY + "px";
+      console.log("mousemove", this.chosenElement.elm.style.left);
+    }
+  }
+
+  private onMouseUp(e: MouseEvent) {
+    console.log("mouseup", this.chosenElement.elm.style.left);
+    this.onDoneEdit();
+    this.initialCoord.x = undefined;
+    this.initialCoord.y = undefined;
+    this.chosenElement = undefined;
+    document.removeEventListener("mousemove", this.onMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
+  }
+
+  private onMouseDown(e: MouseEvent) {
+    e.preventDefault();
+    const target = e.target as HTMLElement;
+    if (target.style.top && target.style.left) {
+      this.initialCoord.x = e.pageX;
+      this.initialCoord.y = e.pageY;
+      this.chosenElement = {
+        x: parseInt(target.style.left, 10),
+        y: parseInt(target.style.top, 10),
+        elm: target as HTMLElement
+      };
+      document.addEventListener("mousemove", this.onMouseMove);
+      document.addEventListener("mouseup", this.onMouseUp);
+    }
+    this.debugReset();
+    this.debugInit();
   }
 }
 </script>
