@@ -1,3 +1,9 @@
+# What's New in Vue 3
+
+We have tried the latest release of the Vue 3 and compile some points we find it important for us to be aware of, especially when we're going to migrate the existing application that's still using Vue 2.
+
+Most of the changes are adopted from [the RFC](https://github.com/vuejs/rfcs), so please check it there for more upcoming changes.
+
 # New Feature & Improvement
 
 ## No Reactivity Caveats
