@@ -23,8 +23,12 @@ These are the new feature and improvement introduced in the Vue 3. There is no b
 - And, the prop name is renamed from `target` to `to`.
 - Since no documentation reported about this yet, I figure it out all thanks to their commit history here:
 https://github.com/vuejs/vue-next/commit/eee50956924d7d2c916cdb8b99043da616e53af5
-- And seems like, currently it still have some bugs. Open challenge for you to help them ;)
-RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0025-teleport.md
+- And seems like, currently it still have some bugs. Which is:
+  - teleport target content aren't replaced, but appended.
+  - cannot teleport synchronously. The target must be rendered first before the teleport runs.
+  The bug has been compared with PortalVue and it's not the same.
+  Open challenge for you to help them ;)
+- RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0025-teleport.md
 
 ## Multiple Root Nodes
 
@@ -104,3 +108,4 @@ These are the changes that aren't released yet, or not stable yet. They're good 
 
 - Existing hooks are renamed to map better to the component lifecycle
 - RFC: https://github.com/vuejs/rfcs/blob/master/active-rfcs/0012-custom-directive-api-change.md
+

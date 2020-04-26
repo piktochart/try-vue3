@@ -22,6 +22,9 @@
         Loading...
       </template>
     </Suspense>
+    <h2>Test Component Switch</h2>
+    <div id="test-teleport">Default Teleport</div>
+    <component :is="componentName" />
   </div>
 </template>
 <script lang="ts">
@@ -29,13 +32,17 @@ import { defineComponent } from "vue";
 import List from "@/components/List.vue";
 import ModalInput from "@/components/ModalInput.vue";
 import LoadUser from "@/components/LoadUser.vue";
+import TestTeleport1 from "@/components/TestTeleport1.vue";
+import TestTeleport2 from "@/components/TestTeleport2.vue";
 
 export default defineComponent({
   name: "Playground",
   components: {
     List,
     ModalInput,
-    LoadUser
+    LoadUser,
+    TestTeleport1,
+    TestTeleport2
   },
   data() {
     return {
@@ -54,8 +61,17 @@ export default defineComponent({
         "Jun3"
       ],
       modalVisible: false,
-      modalValue: ""
+      modalValue: "",
+      componentName: "test-teleport1"
     };
+  },
+  mounted() {
+    const components = ["test-teleport1", "test-teleport2"];
+    let idx = 0;
+    setInterval(() => {
+      this.componentName = components[idx];
+      idx = idx === 0 ? 1 : 0;
+    }, 1000);
   }
 });
 </script>
