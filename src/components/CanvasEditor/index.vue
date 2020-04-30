@@ -1,12 +1,12 @@
 <template>
   <div v-for="blockId in blockList" :key="blockId" class="block">
-    <template v-for="elementId in blocks[blockId].elements">
+    <template v-for="itemId in blocks[blockId].items">
       <div
-        :key="elementId"
-        :id="`element-${elementId}`"
-        :style="elementStyle(elements[elementId])"
-        class="element"
-        @mousedown="mouseDownElement"
+        :key="itemId"
+        :id="`item-${itemId}`"
+        :style="itemStyle(items[itemId])"
+        class="item"
+        @mousedown="mouseDownItem"
       >
         <img src="~./test.jpg" />
       </div>
@@ -19,7 +19,7 @@ import imageUrl from "./test.jpg";
 
 interface Block {
   id: string;
-  elements: Array<Element["id"]>;
+  items: Array<Item["id"]>;
 }
 
 interface Blocks {
@@ -28,15 +28,14 @@ interface Blocks {
 
 type BlockList = Array<Block["id"]>;
 
-interface Element {
+interface Item {
   id: string;
-  elm?: HTMLElement;
   x: number;
   y: number;
 }
 
-interface Elements {
-  [key: string]: Element;
+interface Items {
+  [key: string]: Item;
 }
 
 interface Coord {
@@ -44,20 +43,20 @@ interface Coord {
   y: number;
 }
 
-type ElementList = Array<Element["id"]>;
+type ItemList = Array<Item["id"]>;
 
 @Options({})
-export default class DragDropElement extends Vue {
+export default class DragDropItem extends Vue {
   private selectedMode = "vue";
 
   private blocks: Blocks = {
     "1": {
       id: "1",
-      elements: ["1", "2"]
+      items: ["1", "2"]
     }
   };
   private blockList: BlockList = ["1"];
-  private elements: Elements = {
+  private items: Items = {
     "1": {
       id: "1",
       x: 10,
@@ -69,10 +68,10 @@ export default class DragDropElement extends Vue {
       y: 200
     }
   };
-  private elementList: ElementList = [];
+  private itemList: ItemList = [];
   private blockCount = 1;
-  private elementCount = 1;
-  private chosenElement: Element | undefined = undefined;
+  private itemCount = 1;
+  private chosenItem: Item | undefined = undefined;
   private mouseDownCoord: Coord | undefined = undefined;
 
   private performanceFlag = 0;
@@ -84,44 +83,44 @@ export default class DragDropElement extends Vue {
     return Math.round(Math.random() * 1000000000).toString();
   }
 
-  private elementStyle(element: Element) {
+  private itemStyle(item: Item) {
     return {
-      left: element.x + "px",
-      top: element.y + "px"
+      left: item.x + "px",
+      top: item.y + "px"
     };
   }
 
-  private mouseDownElement(e: MouseEvent) {
+  private mouseDownItem(e: MouseEvent) {
     const target = e.target as HTMLDivElement;
-    const elementId = target && target.id.replace("element-", "");
+    const itemId = target && target.id.replace("item-", "");
     this.mouseDownCoord = {
       x: e.pageX,
       y: e.pageY
     };
-    this.chosenElement = Object.assign({}, this.elements[elementId]);
-    document.addEventListener("mousemove", this.mouseMoveElement);
-    document.addEventListener("mouseup", this.mouseUpElement);
+    this.chosenItem = Object.assign({}, this.items[itemId]);
+    document.addEventListener("mousemove", this.mouseMoveItem);
+    document.addEventListener("mouseup", this.mouseUpItem);
   }
 
-  private mouseMoveElement(e: MouseEvent) {
-    if (this.mouseDownCoord && this.chosenElement) {
+  private mouseMoveItem(e: MouseEvent) {
+    if (this.mouseDownCoord && this.chosenItem) {
       const moveCoordinate = {
         x: e.pageX - this.mouseDownCoord.x,
         y: e.pageY - this.mouseDownCoord.y
       };
-      const id = this.chosenElement.id;
+      const id = this.chosenItem.id;
       if (id) {
-        this.elements[id].x = this.chosenElement.x + moveCoordinate.x;
-        this.elements[id].y = this.chosenElement.y + moveCoordinate.y;
+        this.items[id].x = this.chosenItem.x + moveCoordinate.x;
+        this.items[id].y = this.chosenItem.y + moveCoordinate.y;
       }
     }
   }
 
-  private mouseUpElement(e: MouseEvent) {
+  private mouseUpItem(e: MouseEvent) {
     this.mouseDownCoord = undefined;
-    this.chosenElement = undefined;
-    document.removeEventListener("mousemove", this.mouseMoveElement);
-    document.removeEventListener("mouseup", this.mouseUpElement);
+    this.chosenItem = undefined;
+    document.removeEventListener("mousemove", this.mouseMoveItem);
+    document.removeEventListener("mouseup", this.mouseUpItem);
   }
 }
 </script>
@@ -134,7 +133,7 @@ export default class DragDropElement extends Vue {
   margin: auto;
   position: relative;
 
-  .element {
+  .item {
     position: absolute;
     border: 1px solid grey;
 
