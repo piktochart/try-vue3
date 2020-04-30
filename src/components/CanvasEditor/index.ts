@@ -1,36 +1,21 @@
 import { Vue, Options } from "vue-class-component";
 import imageUrl from "./test.jpg";
-
-interface Block {
-  id: string;
-  items: Array<Item["id"]>;
-}
-
-interface Blocks {
-  [key: string]: Block;
-}
-
-type BlockList = Array<Block["id"]>;
-
-interface Item {
-  id: string;
-  x: number;
-  y: number;
-}
-
-interface Items {
-  [key: string]: Item;
-}
-
-interface Coord {
-  x: number;
-  y: number;
-}
-
-type ItemList = Array<Item["id"]>;
+import {
+  Block,
+  Blocks,
+  BlockList,
+  Item,
+  Items,
+  Coord,
+  ItemList
+} from "./types";
 
 @Options({})
 export default class CanvasEditor extends Vue {
+  setup() {
+    return;
+  }
+
   private blocks: Blocks = {
     "1": {
       id: "1",
