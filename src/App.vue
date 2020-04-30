@@ -5,6 +5,7 @@
       <router-link to="/">Home</router-link> |
       <router-link to="/playground">Playground</router-link> |
       <router-link to="/dragdrop">Drag Drop</router-link> |
+      <router-link to="/editor">Editor</router-link> |
       <router-link to="/about">About</router-link>
     </div>
     <router-view />
