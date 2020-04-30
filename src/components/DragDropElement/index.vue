@@ -8,6 +8,15 @@
         <option value="vue-native">Vue with Native</option>
       </select>
       <div>
+        Block Size :
+        <input v-model="blockWidth" /> x
+        <input v-model="blockHeight" />
+      </div>
+      <div>
+        Zoom Ratio :
+        <input v-model="zoomRatio" />
+      </div>
+      <div>
         Number of Block(s) :
         <input v-model="blockCount" />
       </div>
@@ -21,7 +30,15 @@
     </div>
 
     <template v-if="selectedMode === 'vue' || selectedMode === 'vue-native'">
-      <div v-for="blockId in blockList" :key="blockId" class="block">
+      <div
+        v-for="blockId in blockList"
+        :key="blockId"
+        class="block"
+        :style="{
+          width: `${renderedBlockSize.w}px`,
+          height: `${renderedBlockSize.h}px`
+        }"
+      >
         <template v-for="elementId in blocks[blockId].elements">
           <div
             :key="elementId"
@@ -99,9 +116,11 @@ type ElementList = Array<Element["id"]>;
 })
 export default class DragDropElement extends Vue {
   private selectedMode = "vue";
-
+  private zoomRatio = 1;
   private blocks: Blocks = {};
   private blockList: BlockList = [];
+  private blockWidth = 800;
+  private blockHeight = 500;
   private elements: Elements = {};
   private elementList: ElementList = [];
   private blockCount = 1;
@@ -120,6 +139,13 @@ export default class DragDropElement extends Vue {
       0
     );
     return sum === 0 ? sum : sum / this.debugTime.length;
+  }
+
+  get renderedBlockSize() {
+    return {
+      w: this.blockWidth * this.zoomRatio,
+      h: this.blockHeight * this.zoomRatio
+    };
   }
 
   private async initMode() {
@@ -159,8 +185,8 @@ export default class DragDropElement extends Vue {
         const newElementId = this.getId();
         this.elements[newElementId] = {
           id: newElementId,
-          x: Math.round(Math.random() * 600),
-          y: Math.round(Math.random() * 350)
+          x: Math.round(Math.random() * 100),
+          y: Math.round(Math.random() * 100)
         };
         this.elementList.push(newElementId);
         this.blocks[newBlockId].elements.push(newElementId);
@@ -174,8 +200,8 @@ export default class DragDropElement extends Vue {
 
   private elementStyle(element: Element) {
     return {
-      left: element.x + "px",
-      top: element.y + "px"
+      left: element.x + "%",
+      top: element.y + "%"
     };
   }
 
@@ -221,8 +247,12 @@ export default class DragDropElement extends Vue {
       };
       const id = this.chosenElement.id;
       if (id) {
-        this.elements[id].x = this.chosenElement.x + moveCoordinate.x;
-        this.elements[id].y = this.chosenElement.y + moveCoordinate.y;
+        this.elements[id].x =
+          this.chosenElement.x +
+          (moveCoordinate.x / this.renderedBlockSize.w) * 100;
+        this.elements[id].y =
+          this.chosenElement.y +
+          (moveCoordinate.y / this.renderedBlockSize.h) * 100;
       }
     }
   }
@@ -276,16 +306,20 @@ export default class DragDropElement extends Vue {
       const newBlockId = this.getId();
       const blockDiv = document.createElement("div");
       blockDiv.setAttribute("class", "block");
+      blockDiv.setAttribute(
+        "style",
+        `width:${this.blockWidth}px; height:${this.blockHeight}px`
+      );
       blockDiv.id = "block-" + newBlockId;
       wrapper.appendChild(blockDiv);
       for (let j = 0; j < elementCount; j++) {
         const newElementId = this.getId();
         const elementDiv = document.createElement("div");
-        const x = Math.round(Math.random() * 600);
-        const y = Math.round(Math.random() * 350);
+        const x = Math.round(Math.random() * 100);
+        const y = Math.round(Math.random() * 100);
         elementDiv.id = "element-" + newElementId;
         elementDiv.setAttribute("class", "element");
-        elementDiv.setAttribute("style", `left: ${x}px; top: ${y}px`);
+        elementDiv.setAttribute("style", `left: ${x}%; top: ${y}%`);
         elementDiv.addEventListener("mousedown", this.onMouseDown);
         const image = document.createElement("img");
         image.src = imageUrl;
@@ -301,6 +335,7 @@ export default class DragDropElement extends Vue {
       this.initialCoord.y &&
       this.chosenElement &&
       this.chosenElement.elm &&
+      this.chosenElement.elm.parentElement &&
       this.chosenElement.x &&
       this.chosenElement.y
     ) {
@@ -308,14 +343,16 @@ export default class DragDropElement extends Vue {
       this.debugInit();
       const updateX = e.pageX - this.initialCoord.x;
       const updateY = e.pageY - this.initialCoord.y;
-      this.chosenElement.elm.style.left = this.chosenElement.x + updateX + "px";
-      this.chosenElement.elm.style.top = this.chosenElement.y + updateY + "px";
-      console.log("mousemove", this.chosenElement.elm.style.left);
+      const parentWidth = this.chosenElement.elm.parentElement.clientWidth;
+      const parentHeight = this.chosenElement.elm.parentElement.clientHeight;
+      this.chosenElement.elm.style.left =
+        this.chosenElement.x + (updateX / parentWidth) * 100 + "%";
+      this.chosenElement.elm.style.top =
+        this.chosenElement.y + (updateY / parentHeight) * 100 + "%";
     }
   }
 
   private onMouseUp(e: MouseEvent) {
-    console.log("mouseup", this.chosenElement.elm.style.left);
     this.onDoneEdit();
     this.initialCoord.x = undefined;
     this.initialCoord.y = undefined;
@@ -346,8 +383,6 @@ export default class DragDropElement extends Vue {
 
 <style lang="scss">
 .block {
-  width: 800px;
-  height: 500px;
   border: 1px solid black;
   margin: auto;
   position: relative;
@@ -355,9 +390,10 @@ export default class DragDropElement extends Vue {
   .element {
     position: absolute;
     border: 1px solid grey;
+    width: 5%;
 
     img {
-      width: 150px;
+      width: 100%;
       pointer-events: none;
     }
   }
