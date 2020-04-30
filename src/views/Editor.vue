@@ -3,7 +3,11 @@
     <Teleport to="#teleport-target">
       <h1>Editor</h1>
     </Teleport>
-    <canvas-editor />
+    <div>
+      <h1>Toolbar</h1>
+      <div>Create new item: <button @click="onClickCreate">Create</button></div>
+    </div>
+    <canvas-editor ref="canvasEditor" @item-created="itemCreated" />
   </div>
 </template>
 
@@ -15,6 +19,14 @@ export default {
   name: "Editor",
   components: {
     CanvasEditor
+  },
+  methods: {
+    itemCreated(item) {
+      console.log(item);
+    },
+    onClickCreate() {
+      this.$refs.canvasEditor.createItem();
+    }
   }
 };
 </script>

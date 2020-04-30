@@ -46,7 +46,7 @@ interface Coord {
 type ItemList = Array<Item["id"]>;
 
 @Options({})
-export default class DragDropItem extends Vue {
+export default class CanvasEditor extends Vue {
   private selectedMode = "vue";
 
   private blocks: Blocks = {
@@ -68,7 +68,7 @@ export default class DragDropItem extends Vue {
       y: 200
     }
   };
-  private itemList: ItemList = [];
+  private itemList: ItemList = ["1", "2"];
   private blockCount = 1;
   private itemCount = 1;
   private chosenItem: Item | undefined = undefined;
@@ -78,6 +78,19 @@ export default class DragDropItem extends Vue {
   private debugTime: number[] = [];
 
   private initialCoord: { x?: number; y?: number } = {};
+
+  public createItem() {
+    const newItem: Item = {
+      id: this.getId(),
+      x: Math.random() * 300,
+      y: Math.random() * 300
+    };
+    this.items[newItem.id] = newItem;
+    this.itemList.push(newItem.id);
+    this.blocks[this.blockList[0]].items.push(newItem.id);
+
+    this.$emit("item-created", newItem);
+  }
 
   private getId(): string {
     return Math.round(Math.random() * 1000000000).toString();
