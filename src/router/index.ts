@@ -23,7 +23,7 @@ const routes: Array<RouteRecordRaw> = [
     path: "/editor",
     name: "Editor",
     component: () =>
-      import(/* webpackChunkName: "playground" */ "../views/Editor.vue")
+      import(/* webpackChunkName: "playground" */ "../views/Editor/index.vue")
   },
   {
     path: "/about",
