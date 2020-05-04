@@ -31,9 +31,8 @@ export function History() {
   };
 
   const undoHistory = () => {
-    if (currIndex > 0) {
-      currIndex--;
-      return histories[currIndex];
+    if (currIndex >= 0) {
+      return histories[currIndex--];
     } else {
       return undefined;
     }
@@ -41,8 +40,7 @@ export function History() {
 
   const redoHistory = () => {
     if (currIndex < histories.length - 1) {
-      currIndex++;
-      return histories[currIndex];
+      return histories[currIndex++];
     } else {
       return undefined;
     }

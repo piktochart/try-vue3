@@ -11,7 +11,7 @@ interface Data {
 }
 
 export const enum Confirm {
-  "CONFIRM_CREATE_ITEM" = "confirmCreateItem"
+  CONFIRM_CREATE_ITEM = "confirmCreateItem"
 }
 
 function getId(): string {
@@ -46,8 +46,12 @@ export default defineComponent({
       data.confirm[name] = callback;
     };
 
-    const createItem = async () => {
-      emit("before-create-item");
+    const createItem = async ({
+      transactional
+    }: {
+      transactional: boolean;
+    }) => {
+      emit("before-create-item", { transactional });
 
       const promiseConfirm = new Promise((res, rej) => {
         data.confirm[Confirm.CONFIRM_CREATE_ITEM](res, rej);
@@ -63,8 +67,31 @@ export default defineComponent({
         data.itemList.push(newItem.id);
         data.blocks[data.blockList[0]].items.push(newItem.id);
 
-        emit("item-created", newItem);
+        emit("item-created", {
+          item: newItem,
+          transactional
+        });
       });
+    };
+
+    const deleteItem = async ({
+      itemId,
+      transactional
+    }: {
+      itemId: Item["id"];
+      transactional: boolean;
+    }) => {
+      emit("before-delete-item", { transactional });
+
+      const item = data.items[itemId];
+      data.itemList.splice(data.itemList.indexOf(itemId), 1);
+      delete data.items[itemId];
+      data.blocks[data.blockList[0]].items.splice(
+        data.blocks[data.blockList[0]].items.indexOf(itemId),
+        1
+      );
+
+      emit("item-deleted", { item, transactional });
     };
 
     const mouseDownItem = (e: MouseEvent) => {
@@ -103,6 +130,7 @@ export default defineComponent({
       ...toRefs(data),
       addConfirmer,
       createItem,
+      deleteItem,
       itemStyle,
       mouseDownItem
     };
