@@ -1,11 +1,17 @@
 import { defineComponent } from "vue";
 import CanvasEditor from "@/components/CanvasEditor/index.vue";
-import { Confirm } from "@/components/CanvasEditor/index.ts";
+import { Confirm, Item } from "@/components/CanvasEditor/index.ts";
+import { History, HistoryAction } from "@/module/history";
 
 export default defineComponent({
   name: "Editor",
   components: {
     CanvasEditor
+  },
+  data() {
+    return {
+      historyStore: History()
+    };
   },
   mounted() {
     this.$refs.canvasEditor.addConfirmer(
@@ -17,10 +23,28 @@ export default defineComponent({
     );
   },
   methods: {
-    beforeCreateItem(item) {
-      console.log("before create item", item);
+    beforeCreateItem() {
+      console.log("before create item");
     },
-    itemCreated(item) {
+    itemCreated(item: Item) {
+      const history = this.historyStore.generateHistoryObject();
+      history.name = "create-new-item";
+      const undoAction: HistoryAction = {
+        name: "delete-item",
+        value: {
+          id: item.id
+        }
+      };
+      history.undo.push(undoAction);
+      const redoAction: HistoryAction = {
+        name: "create-item",
+        value: {
+          item
+        }
+      };
+      history.redo.push(redoAction);
+      this.historyStore.saveHistory(history);
+
       console.log("item created!", item);
     },
     onClickCreate() {

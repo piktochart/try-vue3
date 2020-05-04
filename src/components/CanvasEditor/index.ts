@@ -1,5 +1,6 @@
 import { defineComponent, reactive, toRefs } from "vue";
 import { Blocks, BlockList, Item, Items, Coord, ItemList } from "./types";
+export * from "./types";
 
 interface Data {
   blocks: Blocks;
