@@ -40,7 +40,7 @@ export function History() {
 
   const redoHistory = () => {
     if (currIndex < histories.length - 1) {
-      return histories[currIndex++];
+      return histories[++currIndex];
     } else {
       return undefined;
     }
