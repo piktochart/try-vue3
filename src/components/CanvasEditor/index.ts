@@ -6,6 +6,11 @@ interface Data {
   blockList: BlockList;
   items: Items;
   itemList: ItemList;
+  confirm: Record<string, any>;
+}
+
+export const enum Confirm {
+  "CONFIRM_CREATE_ITEM" = "confirmCreateItem"
 }
 
 function getId(): string {
@@ -23,7 +28,10 @@ export default defineComponent({
       },
       blockList: ["1"],
       items: {},
-      itemList: []
+      itemList: [],
+      confirm: {
+        [Confirm.CONFIRM_CREATE_ITEM]: (res: () => void) => res()
+      }
     });
 
     const itemStyle = (item: Item) => {
@@ -33,17 +41,29 @@ export default defineComponent({
       };
     };
 
-    const createItem = () => {
-      const newItem: Item = {
-        id: getId(),
-        x: Math.random() * 300,
-        y: Math.random() * 300
-      };
-      data.items[newItem.id] = newItem;
-      data.itemList.push(newItem.id);
-      data.blocks[data.blockList[0]].items.push(newItem.id);
+    const addConfirmer = (name: Confirm, callback: () => void) => {
+      data.confirm[name] = callback;
+    };
 
-      emit("item-created", newItem);
+    const createItem = async () => {
+      emit("before-create-item");
+
+      const promiseConfirm = new Promise((res, rej) => {
+        data.confirm[Confirm.CONFIRM_CREATE_ITEM](res, rej);
+      });
+
+      promiseConfirm.then(() => {
+        const newItem: Item = {
+          id: getId(),
+          x: Math.random() * 300,
+          y: Math.random() * 300
+        };
+        data.items[newItem.id] = newItem;
+        data.itemList.push(newItem.id);
+        data.blocks[data.blockList[0]].items.push(newItem.id);
+
+        emit("item-created", newItem);
+      });
     };
 
     const mouseDownItem = (e: MouseEvent) => {
@@ -80,6 +100,7 @@ export default defineComponent({
 
     return {
       ...toRefs(data),
+      addConfirmer,
       createItem,
       itemStyle,
       mouseDownItem

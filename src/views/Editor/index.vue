@@ -7,7 +7,11 @@
       <h1>Toolbar</h1>
       <div>Create new item: <button @click="onClickCreate">Create</button></div>
     </div>
-    <canvas-editor ref="canvasEditor" @item-created="itemCreated" />
+    <canvas-editor
+      ref="canvasEditor"
+      @before-create-item="beforeCreateItem"
+      @item-created="itemCreated"
+    />
   </div>
 </template>
 <script lang="ts" src="./"></script>
