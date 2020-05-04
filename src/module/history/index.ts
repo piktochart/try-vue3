@@ -23,14 +23,35 @@ export function History() {
   };
 
   const saveHistory = (historyObject: HistoryObject) => {
+    histories.splice(currIndex + 1);
     histories.push(historyObject);
     currIndex = histories.length - 1;
 
     console.log("history state", histories, currIndex);
   };
 
+  const undoHistory = () => {
+    if (currIndex > 0) {
+      currIndex--;
+      return histories[currIndex];
+    } else {
+      return undefined;
+    }
+  };
+
+  const redoHistory = () => {
+    if (currIndex < histories.length - 1) {
+      currIndex++;
+      return histories[currIndex];
+    } else {
+      return undefined;
+    }
+  };
+
   return {
     generateHistoryObject,
-    saveHistory
+    saveHistory,
+    undoHistory,
+    redoHistory
   };
 }
