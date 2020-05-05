@@ -28,16 +28,17 @@ export default defineComponent({
     );
   },
   methods: {
-    runAction(action: HistoryAction, transactional: boolean) {
+    async runAction(action: HistoryAction, transactional: boolean) {
+      // due to the asynchronous process on each action,
+      // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
       switch (action.name) {
         case Action.CREATE_ITEM: {
-          this.$refs.canvasEditor.createItem({
+          return this.$refs.canvasEditor.createItem({
             transactional
           });
-          break;
         }
         case Action.DELETE_ITEM: {
-          this.$refs.canvasEditor.deleteItem({
+          return this.$refs.canvasEditor.deleteItem({
             itemId: action.value.id,
             transactional
           });
@@ -75,8 +76,8 @@ export default defineComponent({
       }
       console.log("item created!", item);
     },
-    onClickCreate() {
-      this.runAction({ name: Action.CREATE_ITEM, value: null }, true);
+    async onClickCreate() {
+      await this.runAction({ name: Action.CREATE_ITEM, value: null }, true);
     },
     onClickUndo() {
       const historyObject: HistoryObject = this.historyStore.undoHistory();

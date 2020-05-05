@@ -57,7 +57,7 @@ export default defineComponent({
         data.confirm[Confirm.CONFIRM_CREATE_ITEM](res, rej);
       });
 
-      promiseConfirm.then(() => {
+      return promiseConfirm.then(() => {
         const newItem: Item = {
           id: getId(),
           x: Math.random() * 300,
@@ -71,6 +71,8 @@ export default defineComponent({
           item: newItem,
           transactional
         });
+
+        return newItem;
       });
     };
 
@@ -92,6 +94,8 @@ export default defineComponent({
       );
 
       emit("item-deleted", { item, transactional });
+
+      return item;
     };
 
     const mouseDownItem = (e: MouseEvent) => {
