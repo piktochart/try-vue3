@@ -7,7 +7,6 @@ interface Data {
   blockList: BlockList;
   items: Items;
   itemList: ItemList;
-  confirm: Record<string, any>;
 }
 
 export const enum Confirm {
@@ -29,10 +28,7 @@ export default defineComponent({
       },
       blockList: ["1"],
       items: {},
-      itemList: [],
-      confirm: {
-        [Confirm.CONFIRM_CREATE_ITEM]: (res: () => void) => res()
-      }
+      itemList: []
     });
 
     const itemStyle = (item: Item) => {
@@ -42,59 +38,52 @@ export default defineComponent({
       };
     };
 
-    const addConfirmer = (name: Confirm, callback: () => void) => {
-      data.confirm[name] = callback;
-    };
-
-    const createItem = async ({
-      transactional
-    }: {
-      transactional: boolean;
-    }) => {
-      emit("before-create-item", { transactional });
+    const createItem = async (params: Record<string, any>) => {
+      emit("before-create-item", params);
 
       const promiseConfirm = new Promise((res, rej) => {
-        data.confirm[Confirm.CONFIRM_CREATE_ITEM](res, rej);
+        if (params.confirm && typeof params.confirm === "function") {
+          params.confirm(res, rej);
+        } else res();
       });
 
-      return promiseConfirm.then(() => {
-        const newItem: Item = {
-          id: getId(),
-          x: Math.random() * 300,
-          y: Math.random() * 300
-        };
-        data.items[newItem.id] = newItem;
-        data.itemList.push(newItem.id);
-        data.blocks[data.blockList[0]].items.push(newItem.id);
+      await promiseConfirm;
+      const newItem: Item = {
+        id: getId(),
+        x: Math.random() * 300,
+        y: Math.random() * 300
+      };
+      data.items[newItem.id] = newItem;
+      data.itemList.push(newItem.id);
+      data.blocks[data.blockList[0]].items.push(newItem.id);
 
-        emit("item-created", {
-          item: newItem,
-          transactional
-        });
-
-        return newItem;
+      emit("item-created", {
+        newItem,
+        ...params
       });
+
+      return newItem;
     };
 
-    const deleteItem = async ({
-      itemId,
-      transactional
-    }: {
-      itemId: Item["id"];
-      transactional: boolean;
-    }) => {
-      emit("before-delete-item", { transactional });
+    const deleteItem = async (params: Record<string, any>) => {
+      emit("before-delete-item", params);
 
-      const item = data.items[itemId];
-      data.itemList.splice(data.itemList.indexOf(itemId), 1);
-      delete data.items[itemId];
+      const promiseConfirm = new Promise((res, rej) => {
+        if (params.confirm && typeof params.confirm === "function") {
+          params.confirm(res, rej);
+        } else res();
+      });
+
+      await promiseConfirm;
+
+      const item = data.items[params.itemId];
+      data.itemList.splice(data.itemList.indexOf(params.itemId), 1);
+      delete data.items[params.itemId];
       data.blocks[data.blockList[0]].items.splice(
-        data.blocks[data.blockList[0]].items.indexOf(itemId),
+        data.blocks[data.blockList[0]].items.indexOf(params.itemId),
         1
       );
-
-      emit("item-deleted", { item, transactional });
-
+      emit("item-deleted", params);
       return item;
     };
 
@@ -132,7 +121,6 @@ export default defineComponent({
 
     return {
       ...toRefs(data),
-      addConfirmer,
       createItem,
       deleteItem,
       itemStyle,

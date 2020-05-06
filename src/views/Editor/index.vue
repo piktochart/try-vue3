@@ -11,11 +11,7 @@
         <button @click="onClickRedo">Redo</button>
       </div>
     </div>
-    <canvas-editor
-      ref="canvasEditor"
-      @before-create-item="beforeCreateItem"
-      @item-created="itemCreated"
-    />
+    <canvas-editor ref="canvasEditor" />
   </div>
 </template>
 <script lang="ts" src="./"></script>
