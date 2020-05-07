@@ -1,8 +1,13 @@
-import { defineComponent, ComponentPublicInstance } from "vue";
+import { defineComponent } from "vue";
 import CanvasEditor from "@/components/CanvasEditor/index.vue";
-import { History, HistoryAction } from "@/module/history";
+import { History } from "@/module/history";
 
-const enum Action {
+interface Action {
+  name: ActionName;
+  value: Record<string, any>;
+}
+
+const enum ActionName {
   CREATE_ITEM = "create-item",
   DELETE_ITEM = "delete-item"
 }
@@ -14,25 +19,25 @@ export default defineComponent({
   },
   data() {
     return {
-      historyStore: History()
+      historyStore: Object.freeze(History<Action>())
     };
   },
   methods: {
-    async runAction(action: HistoryAction) {
+    async runAction(action: Action) {
       // due to the asynchronous process on each action,
       // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
       switch (action.name) {
-        case Action.CREATE_ITEM: {
+        case ActionName.CREATE_ITEM: {
           return this.$refs.canvasEditor.createItem(action.value);
         }
-        case Action.DELETE_ITEM: {
+        case ActionName.DELETE_ITEM: {
           return this.$refs.canvasEditor.deleteItem(action.value);
         }
       }
     },
     async onClickCreate() {
       const item = await this.runAction({
-        name: Action.CREATE_ITEM,
+        name: ActionName.CREATE_ITEM,
         value: {
           item: {},
           confirm(res: () => void) {
@@ -43,8 +48,8 @@ export default defineComponent({
       // generate history for undo/redo creation
       const history = this.historyStore.generateHistoryObject();
       history.name = "create-new-item";
-      const undoAction: HistoryAction = {
-        name: Action.DELETE_ITEM,
+      const undoAction: Action = {
+        name: ActionName.DELETE_ITEM,
         value: {
           itemId: item.id,
           confirm(res: () => void) {
@@ -53,8 +58,8 @@ export default defineComponent({
         }
       };
       history.undo.push(undoAction);
-      const redoAction: HistoryAction = {
-        name: Action.CREATE_ITEM,
+      const redoAction: Action = {
+        name: ActionName.CREATE_ITEM,
         value: {
           item,
           confirm(res: () => void) {

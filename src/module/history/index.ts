@@ -1,20 +1,15 @@
-export interface HistoryAction {
+export interface HistoryObject<P> {
   name: string;
-  value: any;
+  undo: P[];
+  redo: P[];
 }
 
-export interface HistoryObject {
-  name: string;
-  undo: HistoryAction[];
-  redo: HistoryAction[];
-}
-
-export function History() {
-  const histories: HistoryObject[] = [];
+export function History<P>() {
+  const histories: HistoryObject<P>[] = [];
   let currIndex = -1;
 
   const generateHistoryObject = () => {
-    const historyObject: HistoryObject = {
+    const historyObject: HistoryObject<P> = {
       name: "",
       undo: [],
       redo: []
@@ -22,7 +17,7 @@ export function History() {
     return historyObject;
   };
 
-  const saveHistory = (historyObject: HistoryObject) => {
+  const saveHistory = (historyObject: HistoryObject<P>) => {
     histories.splice(currIndex + 1);
     histories.push(historyObject);
     currIndex = histories.length - 1;
