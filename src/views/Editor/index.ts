@@ -7,6 +7,12 @@ interface Action {
   value: Record<string, any>;
 }
 
+const enum SourceName {
+  USER_CLICK_CREATE = "user-click-create",
+  USER_HISTORY_UNDO = "user-history-undo",
+  USER_HISTORY_REDO = "user-history-redo"
+}
+
 const enum ActionName {
   CREATE_ITEM = "create-item",
   DELETE_ITEM = "delete-item"
@@ -19,7 +25,10 @@ export default defineComponent({
   },
   data() {
     return {
-      historyStore: Object.freeze(History<Action>())
+      historyStore: Object.freeze(History<Action>()),
+      confirm: (res: () => void) => {
+        res();
+      }
     };
   },
   methods: {
@@ -35,40 +44,16 @@ export default defineComponent({
         }
       }
     },
+    // User Triggered Event
     async onClickCreate() {
       const item = await this.runAction({
         name: ActionName.CREATE_ITEM,
         value: {
           item: {},
-          confirm(res: () => void) {
-            setTimeout(res, 1000);
-          }
+          confirm: this.confirm,
+          source: SourceName.USER_CLICK_CREATE
         }
       });
-      // generate history for undo/redo creation
-      const history = this.historyStore.generateHistoryObject();
-      history.name = "create-new-item";
-      const undoAction: Action = {
-        name: ActionName.DELETE_ITEM,
-        value: {
-          itemId: item.id,
-          confirm(res: () => void) {
-            setTimeout(res, 1000);
-          }
-        }
-      };
-      history.undo.push(undoAction);
-      const redoAction: Action = {
-        name: ActionName.CREATE_ITEM,
-        value: {
-          item,
-          confirm(res: () => void) {
-            setTimeout(res, 1000);
-          }
-        }
-      };
-      history.redo.push(redoAction);
-      this.historyStore.saveHistory(history);
     },
     onClickUndo() {
       const historyObject = this.historyStore.undoHistory();
@@ -91,6 +76,37 @@ export default defineComponent({
       redoAction.forEach(action => {
         this.runAction(action);
       });
+    },
+    // Component Triggered Event
+    onItemCreated(params: any) {
+      if (params.source === SourceName.USER_CLICK_CREATE) {
+        // generate history for undo/redo creation
+        const item = params.newItem;
+        const history = this.historyStore.generateHistoryObject();
+        history.name = "create-new-item";
+        const undoAction: Action = {
+          name: ActionName.DELETE_ITEM,
+          value: {
+            itemId: item.id,
+            confirm: this.confirm,
+            source: SourceName.USER_HISTORY_UNDO
+          }
+        };
+        history.undo.push(undoAction);
+        const redoAction: Action = {
+          name: ActionName.CREATE_ITEM,
+          value: {
+            item,
+            confirm: this.confirm,
+            source: SourceName.USER_HISTORY_REDO
+          }
+        };
+        history.redo.push(redoAction);
+        this.historyStore.saveHistory(history);
+      }
+    },
+    onItemDeleted(params: any) {
+      /* coming soon */
     }
   }
 });

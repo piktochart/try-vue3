@@ -58,8 +58,8 @@ export default defineComponent({
       data.blocks[data.blockList[0]].items.push(newItem.id);
 
       emit("item-created", {
-        newItem,
-        ...params
+        ...params,
+        newItem
       });
 
       return newItem;
@@ -83,7 +83,10 @@ export default defineComponent({
         data.blocks[data.blockList[0]].items.indexOf(params.itemId),
         1
       );
-      emit("item-deleted", params);
+      emit("item-deleted", {
+        ...params,
+        deletedItem: item
+      });
       return item;
     };
 

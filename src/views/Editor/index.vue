@@ -11,7 +11,11 @@
         <button @click="onClickRedo">Redo</button>
       </div>
     </div>
-    <canvas-editor ref="canvasEditor" />
+    <canvas-editor
+      ref="canvasEditor"
+      @item-created="onItemCreated"
+      @item-deleted="onItemDeleted"
+    />
   </div>
 </template>
 <script lang="ts" src="./"></script>
