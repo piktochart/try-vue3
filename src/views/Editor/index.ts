@@ -19,6 +19,8 @@ interface Action {
 
 const enum SourceName {
   USER_CLICK_CREATE = "user-click-create",
+  USER_MOVING_ITEM = "user-moving-item",
+  USER_MOVED_ITEM = "user-moved-item",
   USER_CLICK_HISTORY = "user-click-history",
   USER_HISTORY_UNDO = "user-history-undo",
   USER_HISTORY_REDO = "user-history-redo"
@@ -26,6 +28,7 @@ const enum SourceName {
 
 const enum ActionName {
   CREATE_ITEM = "create-item",
+  UPDATE_ITEM = "update-item",
   DELETE_ITEM = "delete-item",
   UNDO_HISTORY = "undo-history",
   REDO_HISTORY = "redo-history"
@@ -65,6 +68,9 @@ export default defineComponent({
         case ActionName.CREATE_ITEM: {
           return this.createItem(action.value);
         }
+        case ActionName.UPDATE_ITEM: {
+          return this.updateItem(action.value);
+        }
         case ActionName.DELETE_ITEM: {
           return this.deleteItem(action.value);
         }
@@ -96,6 +102,25 @@ export default defineComponent({
         newItem
       });
       return newItem;
+    },
+    async updateItem(params: Record<string, any>) {
+      const promiseConfirm = new Promise((res, rej) => {
+        if (params.confirm && typeof params.confirm === "function") {
+          params.confirm(res, rej);
+        } else res();
+      });
+      await promiseConfirm;
+
+      const itemToUpdate = params.itemToUpdate;
+      const updatedItem = await this.$store.dispatch("canvas/updateItem", {
+        itemToUpdate
+      });
+
+      this.onItemUpdated({
+        ...params,
+        updatedItem
+      });
+      return updatedItem;
     },
     async deleteItem(params: Record<string, any>) {
       const promiseConfirm = new Promise((res, rej) => {
@@ -166,13 +191,45 @@ export default defineComponent({
         }
       });
     },
+    onMovingItem(params: any) {
+      const originalItem = params.item;
+      this.runAction({
+        name: ActionName.UPDATE_ITEM,
+        value: {
+          originalItem,
+          itemToUpdate: {
+            ...originalItem,
+            x: params.x,
+            y: params.y
+          },
+          confirm: this.confirm,
+          source: SourceName.USER_MOVING_ITEM
+        }
+      });
+    },
+    onMovedItem(params: any) {
+      const originalItem = params.item;
+      this.runAction({
+        name: ActionName.UPDATE_ITEM,
+        value: {
+          originalItem,
+          itemToUpdate: {
+            ...originalItem,
+            x: params.x,
+            y: params.y
+          },
+          confirm: this.confirm,
+          source: SourceName.USER_MOVED_ITEM
+        }
+      });
+    },
     // Component Triggered Event
     onItemCreated(params: any) {
       if (params.source === SourceName.USER_CLICK_CREATE) {
         // generate history for undo/redo creation
         const item = params.newItem;
         const history = this.historyStore.generateHistoryObject();
-        history.name = "create-new-item";
+        history.name = params.source;
         const undoAction: Action = {
           name: ActionName.DELETE_ITEM,
           value: {
@@ -194,15 +251,35 @@ export default defineComponent({
         this.historyStore.saveHistory(history);
       }
     },
-    onItemMoving(params: any) {
-      const movingItem = params.item;
-      this.$store.dispatch("canvas/updateItem", {
-        updatedItem: {
-          ...movingItem,
-          x: params.x,
-          y: params.y
-        }
-      });
+    onItemUpdated(params: any) {
+      if (params.source === SourceName.USER_MOVED_ITEM) {
+        // generate history for undo/redo creation
+        const originalItem = Object.assign({}, params.originalItem);
+        const updatedItem = Object.assign({}, params.updatedItem);
+        const history = this.historyStore.generateHistoryObject();
+        history.name = params.source;
+        const undoAction: Action = {
+          name: ActionName.UPDATE_ITEM,
+          value: {
+            originalItem: updatedItem,
+            itemToUpdate: originalItem,
+            confirm: this.confirm,
+            source: SourceName.USER_HISTORY_UNDO
+          }
+        };
+        history.undo.push(undoAction);
+        const redoAction: Action = {
+          name: ActionName.UPDATE_ITEM,
+          value: {
+            originalItem,
+            itemToUpdate: updatedItem,
+            confirm: this.confirm,
+            source: SourceName.USER_HISTORY_REDO
+          }
+        };
+        history.redo.push(redoAction);
+        this.historyStore.saveHistory(history);
+      }
     },
     onItemDeleted(params: any) {
       /* coming soon */

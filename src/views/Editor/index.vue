@@ -17,7 +17,8 @@
       :blockList="blockList"
       :items="items"
       :itemList="itemList"
-      @item-moving="onItemMoving"
+      @moving-item="onMovingItem"
+      @moved-item="onMovedItem"
     />
   </div>
 </template>

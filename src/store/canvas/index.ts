@@ -61,8 +61,9 @@ export const canvasModule: Module<State, any> = {
       return payload.newItem;
     },
     updateItem({ state, commit }, payload) {
-      if (state.items[payload.updatedItem.id]) {
-        commit("updateItem", payload.updatedItem);
+      if (state.items[payload.itemToUpdate.id]) {
+        commit("updateItem", payload.itemToUpdate);
+        return state.items[payload.itemToUpdate.id];
       } else {
         throw new Error("No updated item to be found!");
       }

@@ -50,7 +50,7 @@ export default defineComponent({
           };
           const id = chosenItem.id;
           if (id) {
-            emit("item-moving", {
+            emit("moving-item", {
               item: chosenItem,
               x: chosenItem.x + moveCoordinate.x,
               y: chosenItem.y + moveCoordinate.y
@@ -68,7 +68,7 @@ export default defineComponent({
           };
           const id = chosenItem.id;
           if (id) {
-            emit("item-moved", {
+            emit("moved-item", {
               item: chosenItem,
               x: chosenItem.x + moveCoordinate.x,
               y: chosenItem.y + moveCoordinate.y
