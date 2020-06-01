@@ -13,8 +13,11 @@
     </div>
     <canvas-editor
       ref="canvasEditor"
-      @item-created="onItemCreated"
-      @item-deleted="onItemDeleted"
+      :blocks="blocks"
+      :blockList="blockList"
+      :items="items"
+      :itemList="itemList"
+      @item-moving="onItemMoving"
     />
   </div>
 </template>

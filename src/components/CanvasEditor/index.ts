@@ -1,8 +1,14 @@
-import { defineComponent, reactive, toRefs } from "vue";
-import { Blocks, BlockList, Item, Items, Coord, ItemList } from "./types";
-export * from "./types";
+import { defineComponent, toRefs } from "vue";
+import {
+  Blocks,
+  BlockList,
+  Item,
+  Items,
+  Coord,
+  ItemList
+} from "@/types/canvas";
 
-interface Data {
+interface Props {
   blocks: Blocks;
   blockList: BlockList;
   items: Items;
@@ -13,81 +19,19 @@ export const enum Confirm {
   CONFIRM_CREATE_ITEM = "confirmCreateItem"
 }
 
-function getId(): string {
-  return Math.round(Math.random() * 1000000000).toString();
-}
-
 export default defineComponent({
-  setup(_, { emit }) {
-    const data = reactive<Data>({
-      blocks: {
-        "1": {
-          id: "1",
-          items: []
-        }
-      },
-      blockList: ["1"],
-      items: {},
-      itemList: []
-    });
-
+  props: {
+    blocks: Object,
+    blockList: Array,
+    items: Object,
+    itemList: Array
+  },
+  setup(props: Props, { emit }) {
     const itemStyle = (item: Item) => {
       return {
         left: item.x + "px",
         top: item.y + "px"
       };
-    };
-
-    const createItem = async (params: Record<string, any>) => {
-      emit("before-create-item", params);
-
-      const promiseConfirm = new Promise((res, rej) => {
-        if (params.confirm && typeof params.confirm === "function") {
-          params.confirm(res, rej);
-        } else res();
-      });
-
-      await promiseConfirm;
-      const newItem: Item = {
-        id: getId(),
-        x: Math.random() * 300,
-        y: Math.random() * 300
-      };
-      data.items[newItem.id] = newItem;
-      data.itemList.push(newItem.id);
-      data.blocks[data.blockList[0]].items.push(newItem.id);
-
-      emit("item-created", {
-        ...params,
-        newItem
-      });
-
-      return newItem;
-    };
-
-    const deleteItem = async (params: Record<string, any>) => {
-      emit("before-delete-item", params);
-
-      const promiseConfirm = new Promise((res, rej) => {
-        if (params.confirm && typeof params.confirm === "function") {
-          params.confirm(res, rej);
-        } else res();
-      });
-
-      await promiseConfirm;
-
-      const item = data.items[params.itemId];
-      data.itemList.splice(data.itemList.indexOf(params.itemId), 1);
-      delete data.items[params.itemId];
-      data.blocks[data.blockList[0]].items.splice(
-        data.blocks[data.blockList[0]].items.indexOf(params.itemId),
-        1
-      );
-      emit("item-deleted", {
-        ...params,
-        deletedItem: item
-      });
-      return item;
     };
 
     const mouseDownItem = (e: MouseEvent) => {
@@ -97,8 +41,7 @@ export default defineComponent({
         x: e.pageX,
         y: e.pageY
       };
-      const chosenItem: Item = Object.assign({}, data.items[itemId]);
-
+      const chosenItem: Item = Object.assign({}, props.items[itemId]);
       const mouseMoveItem = (e: MouseEvent) => {
         if (mouseDownCoord && chosenItem) {
           const moveCoordinate = {
@@ -107,13 +50,31 @@ export default defineComponent({
           };
           const id = chosenItem.id;
           if (id) {
-            data.items[id].x = chosenItem.x + moveCoordinate.x;
-            data.items[id].y = chosenItem.y + moveCoordinate.y;
+            emit("item-moving", {
+              item: chosenItem,
+              x: chosenItem.x + moveCoordinate.x,
+              y: chosenItem.y + moveCoordinate.y
+            });
           }
         }
       };
 
       const mouseUpItem = (e: MouseEvent) => {
+        if (mouseDownCoord && chosenItem) {
+          const moveCoordinate = {
+            item: chosenItem,
+            x: e.pageX - mouseDownCoord.x,
+            y: e.pageY - mouseDownCoord.y
+          };
+          const id = chosenItem.id;
+          if (id) {
+            emit("item-moved", {
+              item: chosenItem,
+              x: chosenItem.x + moveCoordinate.x,
+              y: chosenItem.y + moveCoordinate.y
+            });
+          }
+        }
         document.removeEventListener("mousemove", mouseMoveItem);
         document.removeEventListener("mouseup", mouseUpItem);
       };
@@ -123,9 +84,7 @@ export default defineComponent({
     };
 
     return {
-      ...toRefs(data),
-      createItem,
-      deleteItem,
+      ...toRefs(props),
       itemStyle,
       mouseDownItem
     };

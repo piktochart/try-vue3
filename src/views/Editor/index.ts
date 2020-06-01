@@ -1,5 +1,15 @@
 import { defineComponent } from "vue";
+import { mapState, mapActions } from "vuex";
 import CanvasEditor from "@/components/CanvasEditor/index.vue";
+import { canvasModule } from "@/store/canvas";
+import {
+  Blocks,
+  BlockList,
+  Item,
+  Items,
+  Coord,
+  ItemList
+} from "@/types/canvas";
 import { History } from "@/module/history";
 
 interface Action {
@@ -15,7 +25,13 @@ const enum SourceName {
 
 const enum ActionName {
   CREATE_ITEM = "create-item",
-  DELETE_ITEM = "delete-item"
+  DELETE_ITEM = "delete-item",
+  UNDO_HISTORY = "undo-history",
+  REDO_HISTORY = "redo-history"
+}
+
+function getId(): string {
+  return Math.round(Math.random() * 1000000000).toString();
 }
 
 export default defineComponent({
@@ -31,22 +47,69 @@ export default defineComponent({
       }
     };
   },
+  computed: {
+    ...mapState("canvas", ["blocks", "blockList", "items", "itemList"])
+  },
+  beforeCreate() {
+    this.$store.registerModule("canvas", canvasModule);
+  },
+  beforeUnmount() {
+    this.$store.unregisterModule("canvas");
+  },
   methods: {
     async runAction(action: Action) {
       // due to the asynchronous process on each action,
       // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
       switch (action.name) {
         case ActionName.CREATE_ITEM: {
-          return this.$refs.canvasEditor.createItem(action.value);
+          return this.createItem(action.value);
         }
         case ActionName.DELETE_ITEM: {
-          return this.$refs.canvasEditor.deleteItem(action.value);
+          return this.deleteItem(action.value);
         }
       }
     },
+    async createItem(params: Record<string, any>) {
+      const promiseConfirm = new Promise((res, rej) => {
+        if (params.confirm && typeof params.confirm === "function") {
+          params.confirm(res, rej);
+        } else res();
+      });
+      await promiseConfirm;
+
+      const newItem: Item = {
+        id: getId(),
+        x: Math.random() * 300,
+        y: Math.random() * 300
+      };
+      await this.$store.dispatch("canvas/createItem", { newItem });
+
+      this.onItemCreated({
+        ...params,
+        newItem
+      });
+      return newItem;
+    },
+    async deleteItem(params: Record<string, any>) {
+      const promiseConfirm = new Promise((res, rej) => {
+        if (params.confirm && typeof params.confirm === "function") {
+          params.confirm(res, rej);
+        } else res();
+      });
+      await promiseConfirm;
+
+      const deletedItem = await this.$store.dispatch("canvas/deleteItem", {
+        itemId: params.itemId
+      });
+      this.onItemDeleted({
+        ...params,
+        deletedItem
+      });
+      return deletedItem;
+    },
     // User Triggered Event
     async onClickCreate() {
-      const item = await this.runAction({
+      await this.runAction({
         name: ActionName.CREATE_ITEM,
         value: {
           item: {},
@@ -104,6 +167,16 @@ export default defineComponent({
         history.redo.push(redoAction);
         this.historyStore.saveHistory(history);
       }
+    },
+    onItemMoving(params: any) {
+      const movingItem = params.item;
+      this.$store.dispatch("canvas/updateItem", {
+        updatedItem: {
+          ...movingItem,
+          x: params.x,
+          y: params.y
+        }
+      });
     },
     onItemDeleted(params: any) {
       /* coming soon */
