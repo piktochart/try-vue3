@@ -19,6 +19,7 @@ interface Action {
 
 const enum SourceName {
   USER_CLICK_CREATE = "user-click-create",
+  USER_CLICK_HISTORY = "user-click-history",
   USER_HISTORY_UNDO = "user-history-undo",
   USER_HISTORY_REDO = "user-history-redo"
 }
@@ -67,6 +68,12 @@ export default defineComponent({
         case ActionName.DELETE_ITEM: {
           return this.deleteItem(action.value);
         }
+        case ActionName.UNDO_HISTORY: {
+          return this.undoHistory(action.value);
+        }
+        case ActionName.REDO_HISTORY: {
+          return this.redoHistory(action.value);
+        }
       }
     },
     async createItem(params: Record<string, any>) {
@@ -107,9 +114,34 @@ export default defineComponent({
       });
       return deletedItem;
     },
+    async undoHistory(params: Record<string, any>) {
+      const historyObject = this.historyStore.undoHistory();
+      if (!historyObject) {
+        return Promise.resolve();
+      }
+
+      const undoAction = historyObject.undo;
+      const undoPromises: Promise<any>[] = [];
+      undoAction.forEach(action => {
+        undoPromises.push(this.runAction(action));
+      });
+      await Promise.all(undoPromises);
+    },
+    async redoHistory(params: Record<string, any>) {
+      const historyObject = this.historyStore.redoHistory();
+      if (!historyObject) {
+        return Promise.resolve();
+      }
+      const redoAction = historyObject.redo;
+      const redoPromises: Promise<any>[] = [];
+      redoAction.forEach(action => {
+        redoPromises.push(this.runAction(action));
+      });
+      return Promise.all(redoPromises);
+    },
     // User Triggered Event
-    async onClickCreate() {
-      await this.runAction({
+    onClickCreate() {
+      this.runAction({
         name: ActionName.CREATE_ITEM,
         value: {
           item: {},
@@ -119,25 +151,19 @@ export default defineComponent({
       });
     },
     onClickUndo() {
-      const historyObject = this.historyStore.undoHistory();
-      if (!historyObject) {
-        return;
-      }
-
-      const undoAction = historyObject.undo;
-      undoAction.forEach(action => {
-        this.runAction(action);
+      this.runAction({
+        name: ActionName.UNDO_HISTORY,
+        value: {
+          source: SourceName.USER_CLICK_HISTORY
+        }
       });
     },
     onClickRedo() {
-      const historyObject = this.historyStore.redoHistory();
-      if (!historyObject) {
-        return;
-      }
-
-      const redoAction = historyObject.redo;
-      redoAction.forEach(action => {
-        this.runAction(action);
+      this.runAction({
+        name: ActionName.REDO_HISTORY,
+        value: {
+          source: SourceName.USER_CLICK_HISTORY
+        }
       });
     },
     // Component Triggered Event
