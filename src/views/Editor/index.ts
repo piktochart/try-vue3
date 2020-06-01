@@ -90,7 +90,7 @@ export default defineComponent({
       });
       await promiseConfirm;
 
-      const newItem: Item = {
+      const newItem: Item = params.item || {
         id: getId(),
         x: Math.random() * 300,
         y: Math.random() * 300
@@ -169,7 +169,7 @@ export default defineComponent({
       this.runAction({
         name: ActionName.CREATE_ITEM,
         value: {
-          item: {},
+          item: undefined,
           confirm: this.confirm,
           source: SourceName.USER_CLICK_CREATE
         }
