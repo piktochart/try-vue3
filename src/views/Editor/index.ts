@@ -11,6 +11,7 @@ import {
   ItemList
 } from "@/types/canvas";
 import { History } from "@/module/history";
+import mitt from "mitt";
 
 interface Action {
   name: ActionName;
@@ -34,6 +35,12 @@ const enum ActionName {
   REDO_HISTORY = "redo-history"
 }
 
+export const enum EventName {
+  ITEM_CREATED = "item-created",
+  ITEM_UPDATED = "item-updated",
+  ITEM_DELETED = "item-deleted"
+}
+
 function getId(): string {
   return Math.round(Math.random() * 1000000000).toString();
 }
@@ -48,7 +55,8 @@ export default defineComponent({
       historyStore: Object.freeze(History<Action>()),
       confirm: (res: () => void) => {
         res();
-      }
+      },
+      emitter: mitt()
     };
   },
   computed: {
@@ -225,6 +233,7 @@ export default defineComponent({
     },
     // Component Triggered Event
     onItemCreated(params: any) {
+      this.emitter.emit(EventName.ITEM_CREATED, params);
       if (params.source === SourceName.USER_CLICK_CREATE) {
         // generate history for undo/redo creation
         const item = params.newItem;
@@ -252,6 +261,7 @@ export default defineComponent({
       }
     },
     onItemUpdated(params: any) {
+      this.emitter.emit(EventName.ITEM_UPDATED, params);
       if (params.source === SourceName.USER_MOVED_ITEM) {
         // generate history for undo/redo creation
         const originalItem = Object.assign({}, params.originalItem);
@@ -282,7 +292,7 @@ export default defineComponent({
       }
     },
     onItemDeleted(params: any) {
-      /* coming soon */
+      this.emitter.emit(EventName.ITEM_DELETED, params);
     }
   }
 });
