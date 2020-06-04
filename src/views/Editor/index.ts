@@ -12,6 +12,7 @@ import {
 } from "@/types/canvas";
 import mitt from "mitt";
 import { historyExtension } from "./extension/history";
+import { trackingExtension } from "./extension/tracking";
 
 export interface Action {
   name: ActionName;
@@ -56,7 +57,10 @@ export default defineComponent({
         res();
       },
       emitter: mitt(),
-      history: historyExtension()
+      ext: {
+        history: historyExtension(),
+        tracking: trackingExtension()
+      }
     };
   },
   computed: {
@@ -66,7 +70,8 @@ export default defineComponent({
     this.$store.registerModule("canvas", canvasModule);
   },
   mounted() {
-    this.history.init(this);
+    this.ext.history.init(this);
+    this.ext.tracking.init(this);
   },
   beforeUnmount() {
     this.$store.unregisterModule("canvas");
@@ -151,7 +156,7 @@ export default defineComponent({
       return deletedItem;
     },
     async undoHistory(params: Record<string, any>) {
-      const undoAction = this.history.undo();
+      const undoAction = this.ext.history.undo();
       if (!undoAction) {
         return Promise.resolve();
       }
@@ -163,7 +168,7 @@ export default defineComponent({
       await Promise.all(undoPromises);
     },
     async redoHistory(params: Record<string, any>) {
-      const redoAction = this.history.redo();
+      const redoAction = this.ext.history.redo();
       if (!redoAction) {
         return Promise.resolve();
       }
