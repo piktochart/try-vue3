@@ -10,15 +10,15 @@ import {
   Coord,
   ItemList
 } from "@/types/canvas";
-import { History } from "@/module/history";
 import mitt from "mitt";
+import { historyExtension } from "./extension/history";
 
-interface Action {
+export interface Action {
   name: ActionName;
   value: Record<string, any>;
 }
 
-const enum SourceName {
+export const enum SourceName {
   USER_CLICK_CREATE = "user-click-create",
   USER_MOVING_ITEM = "user-moving-item",
   USER_MOVED_ITEM = "user-moved-item",
@@ -27,7 +27,7 @@ const enum SourceName {
   USER_HISTORY_REDO = "user-history-redo"
 }
 
-const enum ActionName {
+export const enum ActionName {
   CREATE_ITEM = "create-item",
   UPDATE_ITEM = "update-item",
   DELETE_ITEM = "delete-item",
@@ -52,11 +52,11 @@ export default defineComponent({
   },
   data() {
     return {
-      historyStore: Object.freeze(History<Action>()),
       confirm: (res: () => void) => {
         res();
       },
-      emitter: mitt()
+      emitter: mitt(),
+      history: historyExtension()
     };
   },
   computed: {
@@ -64,6 +64,9 @@ export default defineComponent({
   },
   beforeCreate() {
     this.$store.registerModule("canvas", canvasModule);
+  },
+  mounted() {
+    this.history.init(this);
   },
   beforeUnmount() {
     this.$store.unregisterModule("canvas");
@@ -148,12 +151,11 @@ export default defineComponent({
       return deletedItem;
     },
     async undoHistory(params: Record<string, any>) {
-      const historyObject = this.historyStore.undoHistory();
-      if (!historyObject) {
+      const undoAction = this.history.undo();
+      if (!undoAction) {
         return Promise.resolve();
       }
 
-      const undoAction = historyObject.undo;
       const undoPromises: Promise<any>[] = [];
       undoAction.forEach(action => {
         undoPromises.push(this.runAction(action));
@@ -161,11 +163,11 @@ export default defineComponent({
       await Promise.all(undoPromises);
     },
     async redoHistory(params: Record<string, any>) {
-      const historyObject = this.historyStore.redoHistory();
-      if (!historyObject) {
+      const redoAction = this.history.redo();
+      if (!redoAction) {
         return Promise.resolve();
       }
-      const redoAction = historyObject.redo;
+
       const redoPromises: Promise<any>[] = [];
       redoAction.forEach(action => {
         redoPromises.push(this.runAction(action));
@@ -234,62 +236,9 @@ export default defineComponent({
     // Component Triggered Event
     onItemCreated(params: any) {
       this.emitter.emit(EventName.ITEM_CREATED, params);
-      if (params.source === SourceName.USER_CLICK_CREATE) {
-        // generate history for undo/redo creation
-        const item = params.newItem;
-        const history = this.historyStore.generateHistoryObject();
-        history.name = params.source;
-        const undoAction: Action = {
-          name: ActionName.DELETE_ITEM,
-          value: {
-            itemId: item.id,
-            confirm: this.confirm,
-            source: SourceName.USER_HISTORY_UNDO
-          }
-        };
-        history.undo.push(undoAction);
-        const redoAction: Action = {
-          name: ActionName.CREATE_ITEM,
-          value: {
-            item,
-            confirm: this.confirm,
-            source: SourceName.USER_HISTORY_REDO
-          }
-        };
-        history.redo.push(redoAction);
-        this.historyStore.saveHistory(history);
-      }
     },
     onItemUpdated(params: any) {
       this.emitter.emit(EventName.ITEM_UPDATED, params);
-      if (params.source === SourceName.USER_MOVED_ITEM) {
-        // generate history for undo/redo creation
-        const originalItem = Object.assign({}, params.originalItem);
-        const updatedItem = Object.assign({}, params.updatedItem);
-        const history = this.historyStore.generateHistoryObject();
-        history.name = params.source;
-        const undoAction: Action = {
-          name: ActionName.UPDATE_ITEM,
-          value: {
-            originalItem: updatedItem,
-            itemToUpdate: originalItem,
-            confirm: this.confirm,
-            source: SourceName.USER_HISTORY_UNDO
-          }
-        };
-        history.undo.push(undoAction);
-        const redoAction: Action = {
-          name: ActionName.UPDATE_ITEM,
-          value: {
-            originalItem,
-            itemToUpdate: updatedItem,
-            confirm: this.confirm,
-            source: SourceName.USER_HISTORY_REDO
-          }
-        };
-        history.redo.push(redoAction);
-        this.historyStore.saveHistory(history);
-      }
     },
     onItemDeleted(params: any) {
       this.emitter.emit(EventName.ITEM_DELETED, params);
