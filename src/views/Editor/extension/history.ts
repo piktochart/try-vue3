@@ -1,7 +1,7 @@
 import { EventName, SourceName, Action, ActionName } from "..";
 import { History } from "@/module/history";
 
-export function historyExtension() {
+export function history() {
   const historyStore = History<Action>();
 
   const init = (vm: any) => {

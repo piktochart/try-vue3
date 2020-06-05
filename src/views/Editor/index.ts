@@ -11,8 +11,7 @@ import {
   ItemList
 } from "@/types/canvas";
 import mitt from "mitt";
-import { historyExtension } from "./extension/history";
-import { trackingExtension } from "./extension/tracking";
+import extensions from "./extension";
 
 export interface Action {
   name: ActionName;
@@ -52,16 +51,16 @@ export default defineComponent({
     CanvasEditor: CanvasEditor as any
   },
   data() {
-    return {
+    const ext: Record<string, any> = {};
+    const data = {
       confirm: (res: () => void) => {
         res();
       },
       emitter: mitt(),
-      ext: {
-        history: historyExtension(),
-        tracking: trackingExtension()
-      }
+      ext
     };
+
+    return data;
   },
   computed: {
     ...mapState("canvas", ["blocks", "blockList", "items", "itemList"])
@@ -70,8 +69,12 @@ export default defineComponent({
     this.$store.registerModule("canvas", canvasModule);
   },
   mounted() {
-    this.ext.history.init(this);
-    this.ext.tracking.init(this);
+    (Object.keys(extensions) as Array<keyof typeof extensions>).forEach(
+      extName => {
+        this.ext[extName] = extensions[extName]();
+        this.ext[extName].init(this);
+      }
+    );
   },
   beforeUnmount() {
     this.$store.unregisterModule("canvas");
