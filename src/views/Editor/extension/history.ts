@@ -1,4 +1,10 @@
-import { EventName, SourceName, Action, ActionName } from "..";
+import {
+  EventName,
+  SourceName,
+  ActionParams,
+  ActionName,
+  ActionFunction
+} from "..";
 import { History } from "@/module/history";
 
 export const enum HistoryActionName {
@@ -12,7 +18,7 @@ export const enum HistorySourceName {
 }
 
 export function history() {
-  const historyStore = History<Action>();
+  const historyStore = History<ActionParams>();
 
   const init = (vm: any) => {
     vm.emitter.on(EventName.ITEM_CREATED, (params: any) => {
@@ -21,7 +27,7 @@ export function history() {
         const item = params.newItem;
         const history = historyStore.generateHistoryObject();
         history.name = params.source;
-        const undoAction: Action = {
+        const undoAction: ActionParams = {
           name: ActionName.DELETE_ITEM,
           value: {
             itemId: item.id,
@@ -30,7 +36,7 @@ export function history() {
           }
         };
         history.undo.push(undoAction);
-        const redoAction: Action = {
+        const redoAction: ActionParams = {
           name: ActionName.CREATE_ITEM,
           value: {
             item,
@@ -50,7 +56,7 @@ export function history() {
         const updatedItem = Object.assign({}, params.updatedItem);
         const history = historyStore.generateHistoryObject();
         history.name = params.source;
-        const undoAction: Action = {
+        const undoAction: ActionParams = {
           name: ActionName.UPDATE_ITEM,
           value: {
             originalItem: updatedItem,
@@ -60,7 +66,7 @@ export function history() {
           }
         };
         history.undo.push(undoAction);
-        const redoAction: Action = {
+        const redoAction: ActionParams = {
           name: ActionName.UPDATE_ITEM,
           value: {
             originalItem,
@@ -75,32 +81,25 @@ export function history() {
     });
   };
 
-  const undo = (params: any, runAction: any) => {
+  const undo: ActionFunction = (params, runAction) => {
     const historyObject = historyStore.undoHistory();
-    if (!historyObject) {
-      return null;
-    }
-    const undoAction = historyObject.undo;
-    if (!undoAction) {
+    if (!historyObject?.undo) {
       return Promise.resolve();
     }
-
+    const undoAction = historyObject.undo;
     const undoPromises: Promise<any>[] = [];
     undoAction.forEach(action => {
       undoPromises.push(runAction(action));
     });
     return Promise.all(undoPromises);
   };
-  const redo = (params: any, runAction: any) => {
+
+  const redo: ActionFunction = (params, runAction) => {
     const historyObject = historyStore.redoHistory();
-    if (!historyObject) {
-      return null;
-    }
-    const redoAction = historyObject.redo;
-    if (!redoAction) {
+    if (!historyObject?.redo) {
       return Promise.resolve();
     }
-
+    const redoAction = historyObject.redo;
     const redoPromises: Promise<any>[] = [];
     redoAction.forEach(action => {
       redoPromises.push(runAction(action));
