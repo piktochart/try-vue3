@@ -11,28 +11,24 @@ import {
   ItemList
 } from "@/types/canvas";
 import mitt from "mitt";
-import extensions from "./extension";
+import { declareMethods, HistoryActionName } from "./extension";
 
-export interface Action {
-  name: ActionName;
-  value: Record<string, any>;
+export interface Action<T = Record<string, any>> {
+  name: ActionName | HistoryActionName;
+  value: T;
 }
 
 export const enum SourceName {
   USER_CLICK_CREATE = "user-click-create",
   USER_MOVING_ITEM = "user-moving-item",
   USER_MOVED_ITEM = "user-moved-item",
-  USER_CLICK_HISTORY = "user-click-history",
-  USER_HISTORY_UNDO = "user-history-undo",
-  USER_HISTORY_REDO = "user-history-redo"
+  USER_CLICK_HISTORY = "user-click-history"
 }
 
 export const enum ActionName {
   CREATE_ITEM = "create-item",
   UPDATE_ITEM = "update-item",
-  DELETE_ITEM = "delete-item",
-  UNDO_HISTORY = "undo-history",
-  REDO_HISTORY = "redo-history"
+  DELETE_ITEM = "delete-item"
 }
 
 export const enum EventName {
@@ -51,13 +47,11 @@ export default defineComponent({
     CanvasEditor: CanvasEditor as any
   },
   data() {
-    const ext: Record<string, any> = {};
     const data = {
       confirm: (res: () => void) => {
         res();
       },
-      emitter: mitt(),
-      ext
+      emitter: mitt()
     };
 
     return data;
@@ -68,13 +62,12 @@ export default defineComponent({
   beforeCreate() {
     this.$store.registerModule("canvas", canvasModule);
   },
+  created() {
+    const methods = declareMethods();
+    Object.assign(this, methods);
+  },
   mounted() {
-    (Object.keys(extensions) as Array<keyof typeof extensions>).forEach(
-      extName => {
-        this.ext[extName] = extensions[extName]();
-        this.ext[extName].init(this);
-      }
-    );
+    this.initExtension(this);
   },
   beforeUnmount() {
     this.$store.unregisterModule("canvas");
@@ -83,25 +76,9 @@ export default defineComponent({
     async runAction(action: Action) {
       // due to the asynchronous process on each action,
       // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
-      switch (action.name) {
-        case ActionName.CREATE_ITEM: {
-          return this.createItem(action.value);
-        }
-        case ActionName.UPDATE_ITEM: {
-          return this.updateItem(action.value);
-        }
-        case ActionName.DELETE_ITEM: {
-          return this.deleteItem(action.value);
-        }
-        case ActionName.UNDO_HISTORY: {
-          return this.undoHistory(action.value);
-        }
-        case ActionName.REDO_HISTORY: {
-          return this.redoHistory(action.value);
-        }
-      }
+      this[action.name](action.value, this.runAction);
     },
-    async createItem(params: Record<string, any>) {
+    async [ActionName.CREATE_ITEM](params: Record<string, any>) {
       const promiseConfirm = new Promise((res, rej) => {
         if (params.confirm && typeof params.confirm === "function") {
           params.confirm(res, rej);
@@ -122,7 +99,7 @@ export default defineComponent({
       });
       return newItem;
     },
-    async updateItem(params: Record<string, any>) {
+    async [ActionName.UPDATE_ITEM](params: Record<string, any>) {
       const promiseConfirm = new Promise((res, rej) => {
         if (params.confirm && typeof params.confirm === "function") {
           params.confirm(res, rej);
@@ -141,7 +118,7 @@ export default defineComponent({
       });
       return updatedItem;
     },
-    async deleteItem(params: Record<string, any>) {
+    async [ActionName.DELETE_ITEM](params: Record<string, any>) {
       const promiseConfirm = new Promise((res, rej) => {
         if (params.confirm && typeof params.confirm === "function") {
           params.confirm(res, rej);
@@ -158,30 +135,6 @@ export default defineComponent({
       });
       return deletedItem;
     },
-    async undoHistory(params: Record<string, any>) {
-      const undoAction = this.ext.history.undo();
-      if (!undoAction) {
-        return Promise.resolve();
-      }
-
-      const undoPromises: Promise<any>[] = [];
-      undoAction.forEach(action => {
-        undoPromises.push(this.runAction(action));
-      });
-      await Promise.all(undoPromises);
-    },
-    async redoHistory(params: Record<string, any>) {
-      const redoAction = this.ext.history.redo();
-      if (!redoAction) {
-        return Promise.resolve();
-      }
-
-      const redoPromises: Promise<any>[] = [];
-      redoAction.forEach(action => {
-        redoPromises.push(this.runAction(action));
-      });
-      return Promise.all(redoPromises);
-    },
     // User Triggered Event
     onClickCreate() {
       this.runAction({
@@ -195,7 +148,7 @@ export default defineComponent({
     },
     onClickUndo() {
       this.runAction({
-        name: ActionName.UNDO_HISTORY,
+        name: HistoryActionName.UNDO_HISTORY,
         value: {
           source: SourceName.USER_CLICK_HISTORY
         }
@@ -203,7 +156,7 @@ export default defineComponent({
     },
     onClickRedo() {
       this.runAction({
-        name: ActionName.REDO_HISTORY,
+        name: HistoryActionName.REDO_HISTORY,
         value: {
           source: SourceName.USER_CLICK_HISTORY
         }

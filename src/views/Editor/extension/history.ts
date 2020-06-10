@@ -1,6 +1,16 @@
 import { EventName, SourceName, Action, ActionName } from "..";
 import { History } from "@/module/history";
 
+export const enum HistoryActionName {
+  UNDO_HISTORY = "undo-history",
+  REDO_HISTORY = "redo-history"
+}
+
+export const enum HistorySourceName {
+  USER_HISTORY_UNDO = "user-history-undo",
+  USER_HISTORY_REDO = "user-history-redo"
+}
+
 export function history() {
   const historyStore = History<Action>();
 
@@ -16,7 +26,7 @@ export function history() {
           value: {
             itemId: item.id,
             confirm: vm.confirm,
-            source: SourceName.USER_HISTORY_UNDO
+            source: HistorySourceName.USER_HISTORY_UNDO
           }
         };
         history.undo.push(undoAction);
@@ -25,7 +35,7 @@ export function history() {
           value: {
             item,
             confirm: vm.confirm,
-            source: SourceName.USER_HISTORY_REDO
+            source: HistorySourceName.USER_HISTORY_REDO
           }
         };
         history.redo.push(redoAction);
@@ -46,7 +56,7 @@ export function history() {
             originalItem: updatedItem,
             itemToUpdate: originalItem,
             confirm: vm.confirm,
-            source: SourceName.USER_HISTORY_UNDO
+            source: HistorySourceName.USER_HISTORY_UNDO
           }
         };
         history.undo.push(undoAction);
@@ -56,7 +66,7 @@ export function history() {
             originalItem,
             itemToUpdate: updatedItem,
             confirm: vm.confirm,
-            source: SourceName.USER_HISTORY_REDO
+            source: HistorySourceName.USER_HISTORY_REDO
           }
         };
         history.redo.push(redoAction);
@@ -65,26 +75,42 @@ export function history() {
     });
   };
 
-  const undo = () => {
+  const undo = (params: any, runAction: any) => {
     const historyObject = historyStore.undoHistory();
     if (!historyObject) {
       return null;
     }
     const undoAction = historyObject.undo;
-    return undoAction;
+    if (!undoAction) {
+      return Promise.resolve();
+    }
+
+    const undoPromises: Promise<any>[] = [];
+    undoAction.forEach(action => {
+      undoPromises.push(runAction(action));
+    });
+    return Promise.all(undoPromises);
   };
-  const redo = () => {
+  const redo = (params: any, runAction: any) => {
     const historyObject = historyStore.redoHistory();
     if (!historyObject) {
       return null;
     }
     const redoAction = historyObject.redo;
-    return redoAction;
+    if (!redoAction) {
+      return Promise.resolve();
+    }
+
+    const redoPromises: Promise<any>[] = [];
+    redoAction.forEach(action => {
+      redoPromises.push(runAction(action));
+    });
+    return Promise.all(redoPromises);
   };
 
   return {
     init,
-    undo,
-    redo
+    [HistoryActionName.UNDO_HISTORY]: undo,
+    [HistoryActionName.REDO_HISTORY]: redo
   };
 }
