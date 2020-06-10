@@ -62,9 +62,12 @@ export default defineComponent({
   },
   created() {
     const methods = declareMethods();
+    // inject methods from extension to the component. Unfortunately the types aren't inherited
+    // we'll see if it makes more sense once migrated to composition API
     Object.assign(this, methods);
   },
   mounted() {
+    // typescript failed here since the injected methods from extension aren't registered in the component instance
     this.initExtension(this);
   },
   beforeUnmount() {
@@ -84,11 +87,8 @@ export default defineComponent({
       });
       await promiseConfirm;
 
-      const newItem: Item = params.item || {
-        id: getId(),
-        x: Math.random() * 300,
-        y: Math.random() * 300
-      };
+      const newItem: Item = params.item;
+
       await this.$store.dispatch("canvas/createItem", { newItem });
 
       this.emitter.emit(EventName.ITEM_CREATED, {
@@ -135,10 +135,16 @@ export default defineComponent({
     },
     // User Triggered Event
     onClickCreate() {
+      const item: Item = {
+        id: getId(),
+        x: Math.random() * 300,
+        y: Math.random() * 300
+      };
+
       this.runAction({
         name: ActionName.CREATE_ITEM,
         value: {
-          item: undefined,
+          item,
           confirm: this.confirm,
           source: SourceName.USER_CLICK_CREATE
         }
@@ -162,15 +168,16 @@ export default defineComponent({
     },
     onMovingItem(params: any) {
       const originalItem = params.item;
+      const itemToUpdate = {
+        ...originalItem,
+        x: params.x,
+        y: params.y
+      };
       this.runAction({
         name: ActionName.UPDATE_ITEM,
         value: {
           originalItem,
-          itemToUpdate: {
-            ...originalItem,
-            x: params.x,
-            y: params.y
-          },
+          itemToUpdate,
           confirm: this.confirm,
           source: SourceName.USER_MOVING_ITEM
         }
@@ -178,15 +185,16 @@ export default defineComponent({
     },
     onMovedItem(params: any) {
       const originalItem = params.item;
+      const itemToUpdate = {
+        ...originalItem,
+        x: params.x,
+        y: params.y
+      };
       this.runAction({
         name: ActionName.UPDATE_ITEM,
         value: {
           originalItem,
-          itemToUpdate: {
-            ...originalItem,
-            x: params.x,
-            y: params.y
-          },
+          itemToUpdate,
           confirm: this.confirm,
           source: SourceName.USER_MOVED_ITEM
         }

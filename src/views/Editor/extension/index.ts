@@ -1,4 +1,4 @@
-import { history, HistoryActionName } from "./history";
+import { history } from "./history";
 import { tracking } from "./tracking";
 
 export { HistoryActionName } from "./history";
