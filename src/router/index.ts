@@ -20,10 +20,15 @@ const routes: Array<RouteRecordRaw> = [
       import(/* webpackChunkName: "playground" */ "../views/DragDrop.vue")
   },
   {
-    path: "/editor",
+    path: "/editor/:id",
     name: "Editor",
     component: () =>
-      import(/* webpackChunkName: "playground" */ "../views/Editor/index.vue")
+      import(/* webpackChunkName: "playground" */ "../views/Editor/index.vue"),
+    props: router => {
+      return {
+        id: router.params.id
+      };
+    }
   },
   {
     path: "/about",

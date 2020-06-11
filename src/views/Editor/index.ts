@@ -59,6 +59,9 @@ export default defineComponent({
   components: {
     CanvasEditor: CanvasEditor as any
   },
+  props: {
+    id: String
+  },
   data() {
     const confirm: Confirm = (params, res) => res();
     const data = {
