@@ -37,13 +37,15 @@ export const enum SourceName {
 export const enum ActionName {
   CREATE_ITEM = "create-item",
   UPDATE_ITEM = "update-item",
-  DELETE_ITEM = "delete-item"
+  DELETE_ITEM = "delete-item",
+  CLEAR_CANVAS = "clear-canvas"
 }
 
 export const enum EventName {
   ITEM_CREATED = "item-created",
   ITEM_UPDATED = "item-updated",
-  ITEM_DELETED = "item-deleted"
+  ITEM_DELETED = "item-deleted",
+  CANVAS_CLEARED = "canvas-cleared"
 }
 
 export type ActionFunction<P = any, R = any> = (
@@ -144,6 +146,12 @@ export default defineComponent({
         deletedItem
       });
       return deletedItem;
+    },
+    async [ActionName.CLEAR_CANVAS](params: ActionValue) {
+      await this.$store.dispatch("canvas/clearCanvas");
+      this.emitter.emit(EventName.CANVAS_CLEARED, {
+        ...params
+      });
     },
     // User Triggered Event
     onClickCreate() {

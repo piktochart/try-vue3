@@ -15,19 +15,21 @@ interface State {
   itemList: ItemList;
 }
 
+const getInitialState = (): State => ({
+  blocks: {
+    "1": {
+      id: "1",
+      items: []
+    }
+  },
+  blockList: ["1"],
+  items: {},
+  itemList: []
+});
+
 export const canvasModule: Module<State, any> = {
   namespaced: true,
-  state: {
-    blocks: {
-      "1": {
-        id: "1",
-        items: []
-      }
-    },
-    blockList: ["1"],
-    items: {},
-    itemList: []
-  },
+  state: getInitialState(),
   mutations: {
     createItem(state, newItem: Item) {
       state.items[newItem.id] = newItem;
@@ -53,6 +55,9 @@ export const canvasModule: Module<State, any> = {
           ...itemParams
         };
       }
+    },
+    clearCanvas(state) {
+      Object.assign(state, getInitialState());
     }
   },
   actions: {
@@ -72,6 +77,9 @@ export const canvasModule: Module<State, any> = {
       const deletedItem = Object.assign({}, state.items[payload.itemId]);
       commit("deleteItem", payload.itemId);
       return deletedItem;
+    },
+    clearCanvas({ commit }) {
+      commit("clearCanvas");
     }
   },
   modules: {}
