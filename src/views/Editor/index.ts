@@ -7,23 +7,24 @@ import mitt from "mitt";
 import {
   declareMethods,
   HistoryActionName,
-  HistorySourceName
+  HistorySourceName,
+  SessionSourceName
 } from "./extension";
 
-type Confirm<T = Record<string, any>> = (
-  arg0: ActionValue<T>,
+export type Confirm<T = Record<string, any>> = (
+  arg0: ActionParams<T>,
   arg1: () => void,
   arg2: () => void
 ) => void;
 
 export type ActionValue<T = Record<string, any>> = {
-  source: SourceName | HistorySourceName;
-  confirm?: Confirm<T>;
+  source: SourceName | HistorySourceName | SessionSourceName;
 } & T;
 
 export interface ActionParams<T = Record<string, any>> {
   name: ActionName | HistoryActionName;
   value: ActionValue<T>;
+  toConfirm?: boolean;
 }
 
 export const enum SourceName {
@@ -95,20 +96,19 @@ export default defineComponent({
     async runAction(action: ActionParams) {
       // due to the asynchronous process on each action,
       // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
+      if (action.toConfirm) {
+        await this.confirmAction(action);
+      }
       return this[action.name](action.value, this.runAction);
     },
-    async confirmAction<P>(params: ActionValue<P>) {
+    async confirmAction<P>(params: ActionParams<P>) {
       const promiseConfirm = new Promise((res, rej) => {
-        if (params.confirm && typeof params.confirm === "function") {
-          params.confirm(params, res, rej);
-        } else res();
+        this.confirm(params, res, rej);
       });
       await promiseConfirm;
     },
     // Core Actions
     async [ActionName.CREATE_ITEM](params: ActionValue<{ item: Item }>) {
-      await this.confirmAction(params);
-
       const newItem: Item = params.item;
 
       await this.$store.dispatch("canvas/createItem", { newItem });
@@ -122,8 +122,6 @@ export default defineComponent({
     async [ActionName.UPDATE_ITEM](
       params: ActionValue<{ itemToUpdate: Item }>
     ) {
-      await this.confirmAction(params);
-
       const itemToUpdate = params.itemToUpdate;
       const updatedItem = await this.$store.dispatch("canvas/updateItem", {
         itemToUpdate
@@ -138,8 +136,6 @@ export default defineComponent({
     async [ActionName.DELETE_ITEM](
       params: ActionValue<{ itemId: Item["id"] }>
     ) {
-      await this.confirmAction(params);
-
       const deletedItem = await this.$store.dispatch("canvas/deleteItem", {
         itemId: params.itemId
       });
@@ -161,9 +157,9 @@ export default defineComponent({
         name: ActionName.CREATE_ITEM,
         value: {
           item,
-          confirm: this.confirm,
           source: SourceName.USER_CLICK_CREATE
-        }
+        },
+        toConfirm: true
       });
     },
     onClickUndo() {
@@ -210,9 +206,9 @@ export default defineComponent({
         value: {
           originalItem,
           itemToUpdate,
-          confirm: this.confirm,
           source: SourceName.USER_MOVED_ITEM
-        }
+        },
+        toConfirm: true
       });
     }
   }

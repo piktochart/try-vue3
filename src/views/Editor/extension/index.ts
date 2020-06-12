@@ -3,6 +3,7 @@ import { tracking } from "./tracking";
 import { session } from "./session";
 
 export { HistoryActionName, HistorySourceName } from "./history";
+export { SessionSourceName } from "./session";
 
 export function declareMethods() {
   const { init: historyInit, ...historyActions } = history();

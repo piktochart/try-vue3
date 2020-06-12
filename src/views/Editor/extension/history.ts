@@ -31,18 +31,18 @@ export function history() {
           name: ActionName.DELETE_ITEM,
           value: {
             itemId: item.id,
-            confirm: vm.confirm,
             source: HistorySourceName.USER_HISTORY_UNDO
-          }
+          },
+          toConfirm: true
         };
         history.undo.push(undoAction);
         const redoAction: ActionParams = {
           name: ActionName.CREATE_ITEM,
           value: {
             item,
-            confirm: vm.confirm,
             source: HistorySourceName.USER_HISTORY_REDO
-          }
+          },
+          toConfirm: true
         };
         history.redo.push(redoAction);
         historyStore.saveHistory(history);
@@ -61,9 +61,9 @@ export function history() {
           value: {
             originalItem: updatedItem,
             itemToUpdate: originalItem,
-            confirm: vm.confirm,
             source: HistorySourceName.USER_HISTORY_UNDO
-          }
+          },
+          toConfirm: true
         };
         history.undo.push(undoAction);
         const redoAction: ActionParams = {
@@ -71,9 +71,9 @@ export function history() {
           value: {
             originalItem,
             itemToUpdate: updatedItem,
-            confirm: vm.confirm,
             source: HistorySourceName.USER_HISTORY_REDO
-          }
+          },
+          toConfirm: true
         };
         history.redo.push(redoAction);
         historyStore.saveHistory(history);
