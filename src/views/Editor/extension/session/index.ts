@@ -3,10 +3,12 @@ import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
 import { Confirm, ActionParams, ActionName } from "../../";
+import { HistoryActionName } from "../history";
 
 export const enum SessionSourceName {
   SESSION_INIT = "session-init",
-  SESSION_RESPONSE = "session-response"
+  SESSION_RESPONSE = "session-response",
+  SESSION_UNDO = "session-undo"
 }
 
 function initFirebase() {
@@ -25,6 +27,8 @@ export function session() {
   initFirebase();
   const uniqueIdentifier = `${Math.random() * 1000000}`;
   const db = firebase.database();
+  // store the snapshot key of each action, to sync between the local queue and key given from firebase
+  const localQueue: string[] = [];
 
   const init = async (vm: any) => {
     const id = vm.id;
@@ -40,11 +44,7 @@ export function session() {
         },
         toConfirm: false
       };
-      dbRef.push(sessionParam, err => {
-        if (err) {
-          console.error("your changes are not saved yet!", err);
-        }
-      });
+      dbRef.push(sessionParam);
       res();
     };
     vm.confirm = confirm;
@@ -59,11 +59,32 @@ export function session() {
     };
     await vm.runAction(clearCanvasAction);
 
-    dbRef.on("child_added", snapshot => {
-      const sessionParam: ActionParams = snapshot.val();
-      if (sessionParam.value.uniqueIdentifier !== uniqueIdentifier) {
-        vm.runAction(sessionParam);
+    dbRef.on("child_added", (snapshot, prevChildKey) => {
+      // there must be a snapshot key to determine the queue of the action
+      if (!snapshot.key) {
+        return;
       }
+
+      const sessionParam: ActionParams = snapshot.val();
+      // if the local action is ahead of the firebase action,
+      // undo the local action until it matches the action of the previous key of the snapshot
+      while (
+        localQueue.length > 0 &&
+        localQueue[localQueue.length - 1] !== prevChildKey
+      ) {
+        const undoAction: ActionParams = {
+          name: HistoryActionName.UNDO_HISTORY,
+          value: {
+            source: SessionSourceName.SESSION_UNDO
+          },
+          toConfirm: false
+        };
+        vm.runAction(undoAction);
+        localQueue.pop();
+      }
+      // record the key to determine that the local queue has been sync with the firebase session
+      localQueue.push(snapshot.key);
+      vm.runAction(sessionParam);
     });
   };
 
