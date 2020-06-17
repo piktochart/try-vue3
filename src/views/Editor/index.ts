@@ -4,7 +4,7 @@ import CanvasEditor from "@/components/CanvasEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
-import { declareMethods, ActionName, SourceName, EventName } from "./extension";
+import { useExtension, ActionName, SourceName, EventName } from "./extension";
 
 export type Confirm<T = Record<string, any>> = (
   arg0: ActionParams<T>,
@@ -259,8 +259,7 @@ export default defineComponent({
     };
 
     // Init Extensions
-    const extMethods = declareMethods();
-    extMethods.initExtension({
+    useExtension({
       emitter,
       props,
       setConfirmAction,

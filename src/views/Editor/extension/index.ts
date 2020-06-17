@@ -21,18 +21,8 @@ export const EventName = {
   ...CoreEventName
 };
 
-export function declareMethods() {
-  const { init: historyInit } = history();
-  const { init: trackingInit } = tracking();
-  const { init: sessionInit } = session();
-
-  const initExtension = (vm: Initializer) => {
-    historyInit(vm);
-    trackingInit(vm);
-    sessionInit(vm);
-  };
-
-  return {
-    initExtension
-  };
+export function useExtension(vm: Initializer) {
+  history(vm);
+  tracking(vm);
+  session(vm);
 }
