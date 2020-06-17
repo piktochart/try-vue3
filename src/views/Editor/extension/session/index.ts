@@ -15,10 +15,11 @@ function initFirebase() {
   if (firebase.apps.length === 0) {
     const dbName = "livecollab-4eb22";
     const config = {
-      apiKey: process.env.FIREBASE_WEB_API_KEY,
+      apiKey: process.env.VUE_APP_FIREBASE_WEB_API_KEY,
       authDomain: `${dbName}.firebaseapp.com`,
       databaseURL: `https://${dbName}.firebaseio.com`
     };
+    console.log(config);
     firebase.initializeApp(config);
   }
 }
