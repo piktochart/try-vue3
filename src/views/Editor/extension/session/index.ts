@@ -43,7 +43,6 @@ export async function session({
       ...params,
       value: {
         ...params.value,
-        source: SessionSourceName.SESSION_RESPONSE,
         uniqueIdentifier
       },
       toConfirm: false
@@ -70,6 +69,10 @@ export async function session({
     }
 
     const sessionParam: ActionParams = snapshot.val();
+    // if the session param is not from the user itself, treat it as session response
+    if (sessionParam.value.uniqueIdentifier !== uniqueIdentifier) {
+      sessionParam.value.source = SessionSourceName.SESSION_RESPONSE;
+    }
     // if the local action is ahead of the firebase action,
     // undo the local action until it matches the action of the previous key of the snapshot
     while (
