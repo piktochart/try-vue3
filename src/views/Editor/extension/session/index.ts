@@ -2,7 +2,7 @@ import * as firebase from "firebase/app";
 // Add the Firebase products that you want to use
 import "firebase/auth";
 import "firebase/database";
-import { Confirm, ActionParams, ActionName } from "../../";
+import { Confirm, ActionParams, ActionName, Initializer } from "../../";
 import { HistoryActionName } from "../history";
 
 export const enum SessionSourceName {
@@ -31,8 +31,8 @@ export function session() {
   // store the snapshot key of each action, to sync between the local queue and key given from firebase
   const localQueue: string[] = [];
 
-  const init = async (vm: any) => {
-    const id = vm.id;
+  const init = async ({ props, setConfirmAction, runAction }: Initializer) => {
+    const id = props.id;
 
     const dbRef = db.ref(`editor/${id}`);
     const confirm: Confirm = (params, res) => {
@@ -48,7 +48,7 @@ export function session() {
       dbRef.push(sessionParam);
       res(false);
     };
-    vm.confirm = confirm;
+    setConfirmAction(confirm);
 
     // clear the canvas since the state will be reproduced by firebase
     const clearCanvasAction: ActionParams = {
@@ -58,7 +58,7 @@ export function session() {
       },
       toConfirm: false
     };
-    await vm.runAction(clearCanvasAction);
+    await runAction(clearCanvasAction);
 
     dbRef.on("child_added", (snapshot, prevChildKey) => {
       // there must be a snapshot key to determine the queue of the action
@@ -80,12 +80,12 @@ export function session() {
           },
           toConfirm: false
         };
-        vm.runAction(undoAction);
+        runAction(undoAction);
         localQueue.pop();
       }
       // record the key to determine that the local queue has been sync with the firebase session
       localQueue.push(snapshot.key);
-      vm.runAction(sessionParam);
+      runAction(sessionParam);
     });
   };
 

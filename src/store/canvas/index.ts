@@ -8,7 +8,7 @@ import {
   ItemList
 } from "@/types/canvas";
 
-interface State {
+export interface State {
   blocks: Blocks;
   blockList: BlockList;
   items: Items;

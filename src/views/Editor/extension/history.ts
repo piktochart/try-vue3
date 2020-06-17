@@ -1,4 +1,5 @@
 import {
+  Initializer,
   EventName,
   SourceName,
   ActionParams,
@@ -20,8 +21,8 @@ export const enum HistorySourceName {
 export function history() {
   const historyStore = History<ActionParams>();
 
-  const init = (vm: any) => {
-    vm.emitter.on(EventName.ITEM_CREATED, (params: any) => {
+  const init = ({ emitter, runAction, registerAction }: Initializer) => {
+    emitter.on(EventName.ITEM_CREATED, (params: any) => {
       if (params.source === SourceName.USER_CLICK_CREATE) {
         // generate history for undo/redo creation
         const item = params.newItem;
@@ -49,7 +50,7 @@ export function history() {
       }
     });
 
-    vm.emitter.on(EventName.ITEM_UPDATED, (params: any) => {
+    emitter.on(EventName.ITEM_UPDATED, (params: any) => {
       if (params.source === SourceName.USER_MOVED_ITEM) {
         // generate history for undo/redo creation
         const originalItem = Object.assign({}, params.originalItem);
@@ -79,37 +80,35 @@ export function history() {
         historyStore.saveHistory(history);
       }
     });
-  };
 
-  const undo: ActionFunction = (params, runAction) => {
-    const historyObject = historyStore.undoHistory();
-    if (!historyObject?.undo) {
-      return Promise.resolve();
-    }
-    const undoAction = historyObject.undo;
-    const undoPromises: Promise<any>[] = [];
-    undoAction.forEach(action => {
-      undoPromises.push(runAction(action));
+    registerAction(HistoryActionName.UNDO_HISTORY, () => {
+      const historyObject = historyStore.undoHistory();
+      if (!historyObject?.undo) {
+        return Promise.resolve();
+      }
+      const undoAction = historyObject.undo;
+      const undoPromises: Promise<any>[] = [];
+      undoAction.forEach(action => {
+        undoPromises.push(runAction(action));
+      });
+      return Promise.all(undoPromises);
     });
-    return Promise.all(undoPromises);
-  };
 
-  const redo: ActionFunction = (params, runAction) => {
-    const historyObject = historyStore.redoHistory();
-    if (!historyObject?.redo) {
-      return Promise.resolve();
-    }
-    const redoAction = historyObject.redo;
-    const redoPromises: Promise<any>[] = [];
-    redoAction.forEach(action => {
-      redoPromises.push(runAction(action));
+    registerAction(HistoryActionName.REDO_HISTORY, () => {
+      const historyObject = historyStore.redoHistory();
+      if (!historyObject?.redo) {
+        return Promise.resolve();
+      }
+      const redoAction = historyObject.redo;
+      const redoPromises: Promise<any>[] = [];
+      redoAction.forEach(action => {
+        redoPromises.push(runAction(action));
+      });
+      return Promise.all(redoPromises);
     });
-    return Promise.all(redoPromises);
   };
 
   return {
-    init,
-    [HistoryActionName.UNDO_HISTORY]: undo,
-    [HistoryActionName.REDO_HISTORY]: redo
+    init
   };
 }
