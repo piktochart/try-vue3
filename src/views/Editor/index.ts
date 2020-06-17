@@ -194,7 +194,7 @@ export default defineComponent({
     );
 
     // User Events
-    const onClickCreate = () => {
+    const onClickCreateImage = () => {
       const item: Item = {
         id: getId(),
         container: {
@@ -206,6 +206,29 @@ export default defineComponent({
         type: ItemTypes.IMAGE,
         content: {
           url: require("@/assets/test.jpg")
+        }
+      };
+      runAction({
+        name: ActionName.CREATE_ITEM,
+        value: {
+          item,
+          source: SourceName.USER_CLICK_CREATE
+        },
+        toConfirm: true
+      });
+    };
+    const onClickCreateText = () => {
+      const item: Item = {
+        id: getId(),
+        container: {
+          x: Math.random() * 300,
+          y: Math.random() * 300,
+          w: 100,
+          h: 100
+        },
+        type: ItemTypes.TEXT,
+        content: {
+          text: "Hello World"
         }
       };
       runAction({
@@ -284,7 +307,8 @@ export default defineComponent({
 
     const toReturn = {
       ...canvasState,
-      onClickCreate,
+      onClickCreateImage,
+      onClickCreateText,
       onClickUndo,
       onClickRedo,
       onMovingItem,

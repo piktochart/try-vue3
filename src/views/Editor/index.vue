@@ -5,7 +5,8 @@
     </Teleport>
     <div>
       <h1>Toolbar</h1>
-      <div>Create new item: <button @click="onClickCreate">Create</button></div>
+      <div><button @click="onClickCreateImage">Add image</button></div>
+      <div><button @click="onClickCreateText">Add text</button></div>
       <div>
         <button @click="onClickUndo">Undo</button>
         <button @click="onClickRedo">Redo</button>

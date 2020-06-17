@@ -1,4 +1,4 @@
-import { defineComponent, toRefs } from "vue";
+import { defineComponent } from "vue";
 import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
 import {
   ItemTypes,
