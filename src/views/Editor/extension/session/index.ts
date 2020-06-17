@@ -45,7 +45,7 @@ export function session() {
         toConfirm: false
       };
       dbRef.push(sessionParam);
-      res();
+      res(false);
     };
     vm.confirm = confirm;
 

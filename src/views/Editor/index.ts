@@ -13,7 +13,7 @@ import {
 
 export type Confirm<T = Record<string, any>> = (
   arg0: ActionParams<T>,
-  arg1: () => void,
+  arg1: (arg0: boolean) => void,
   arg2: () => void
 ) => void;
 
@@ -66,7 +66,7 @@ export default defineComponent({
     id: String
   },
   data() {
-    const confirm: Confirm = (params, res) => res();
+    const confirm: Confirm = (params, res) => res(true);
     const data = {
       confirm,
       emitter: mitt()
@@ -99,15 +99,19 @@ export default defineComponent({
       // due to the asynchronous process on each action,
       // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
       if (action.toConfirm) {
-        await this.confirmAction(action);
+        const isConfirm = await this.confirmAction(action);
+        return isConfirm
+          ? this[action.name](action.value, this.runAction)
+          : Promise.resolve();
+      } else {
+        return this[action.name](action.value, this.runAction);
       }
-      return this[action.name](action.value, this.runAction);
     },
     async confirmAction<P>(params: ActionParams<P>) {
-      const promiseConfirm = new Promise((res, rej) => {
+      const promiseConfirm = new Promise<boolean>((res, rej) => {
         this.confirm(params, res, rej);
       });
-      await promiseConfirm;
+      return promiseConfirm;
     },
     // Core Actions
     async [ActionName.CREATE_ITEM](params: ActionValue<{ item: Item }>) {
