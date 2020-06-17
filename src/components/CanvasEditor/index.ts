@@ -1,12 +1,8 @@
 import { defineComponent, toRefs } from "vue";
-import {
-  Blocks,
-  BlockList,
-  Item,
-  Items,
-  Coord,
-  ItemList
-} from "@/types/canvas";
+import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
+import CanvasItemContainer from "@/module/canvas-item/container/component.vue";
+import CanvasItemImage from "@/module/canvas-item/image/component.vue";
+import { ItemTypes } from "@/module/canvas-item/types";
 
 interface Props {
   blocks: Blocks;
@@ -15,29 +11,33 @@ interface Props {
   itemList: ItemList;
 }
 
-export const enum Confirm {
-  CONFIRM_CREATE_ITEM = "confirmCreateItem"
-}
-
 export default defineComponent({
+  name: "CanvasEditor",
+  components: {
+    CanvasItemContainer: CanvasItemContainer as any,
+    CanvasItemImage: CanvasItemImage as any
+  },
   props: {
-    blocks: Object,
-    blockList: Array,
-    items: Object,
-    itemList: Array
+    blocks: {
+      type: Object,
+      required: true
+    },
+    blockList: {
+      type: Array,
+      required: true
+    },
+    items: {
+      type: Object,
+      required: true
+    },
+    itemList: {
+      type: Array,
+      required: true
+    }
   },
   setup(props: Props, { emit }) {
-    const itemStyle = (item: Item) => {
-      return {
-        left: item.x + "px",
-        top: item.y + "px"
-      };
-    };
-
-    const mouseDownItem = (e: MouseEvent) => {
-      const target = e.target as HTMLDivElement;
-      const itemId = target && target.id.replace("item-", "");
-      const mouseDownCoord: Coord = {
+    const mouseDownItem = (e: MouseEvent, itemId: Item["id"]) => {
+      const mouseDownCoord = {
         x: e.pageX,
         y: e.pageY
       };
@@ -52,8 +52,8 @@ export default defineComponent({
           if (id) {
             emit("moving-item", {
               item: chosenItem,
-              x: chosenItem.x + moveCoordinate.x,
-              y: chosenItem.y + moveCoordinate.y
+              x: chosenItem.container.x + moveCoordinate.x,
+              y: chosenItem.container.y + moveCoordinate.y
             });
           }
         }
@@ -70,8 +70,8 @@ export default defineComponent({
           if (id) {
             emit("moved-item", {
               item: chosenItem,
-              x: chosenItem.x + moveCoordinate.x,
-              y: chosenItem.y + moveCoordinate.y
+              x: chosenItem.container.x + moveCoordinate.x,
+              y: chosenItem.container.y + moveCoordinate.y
             });
           }
         }
@@ -83,9 +83,11 @@ export default defineComponent({
       document.addEventListener("mouseup", mouseUpItem);
     };
 
+    const itemTypes = ItemTypes;
+
     return {
-      ...toRefs(props),
-      itemStyle,
+      ...props,
+      itemTypes,
       mouseDownItem
     };
   }

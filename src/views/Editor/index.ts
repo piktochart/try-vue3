@@ -5,6 +5,7 @@ import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
 import { useExtension, ActionName, SourceName, EventName } from "./extension";
+import { ItemTypes } from "@/module/canvas-item/types";
 
 export type Confirm<T = Record<string, any>> = (
   arg0: ActionParams<T>,
@@ -196,8 +197,16 @@ export default defineComponent({
     const onClickCreate = () => {
       const item: Item = {
         id: getId(),
-        x: Math.random() * 300,
-        y: Math.random() * 300
+        container: {
+          x: Math.random() * 300,
+          y: Math.random() * 300,
+          w: 150,
+          h: 120
+        },
+        type: ItemTypes.IMAGE,
+        content: {
+          url: require("@/assets/test.jpg")
+        }
       };
       runAction({
         name: ActionName.CREATE_ITEM,
@@ -228,8 +237,11 @@ export default defineComponent({
       const originalItem = params.item;
       const itemToUpdate = {
         ...originalItem,
-        x: params.x,
-        y: params.y
+        container: {
+          ...originalItem.container,
+          x: params.x,
+          y: params.y
+        }
       };
       runAction({
         name: ActionName.UPDATE_ITEM,
@@ -244,8 +256,11 @@ export default defineComponent({
       const originalItem = params.item;
       const itemToUpdate = {
         ...originalItem,
-        x: params.x,
-        y: params.y
+        container: {
+          ...originalItem.container,
+          x: params.x,
+          y: params.y
+        }
       };
       runAction({
         name: ActionName.UPDATE_ITEM,

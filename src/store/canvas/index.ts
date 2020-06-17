@@ -1,12 +1,5 @@
 import { Module } from "vuex";
-import {
-  Blocks,
-  BlockList,
-  Item,
-  Items,
-  Coord,
-  ItemList
-} from "@/types/canvas";
+import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
 
 export interface State {
   blocks: Blocks;

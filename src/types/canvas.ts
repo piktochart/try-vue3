@@ -1,3 +1,7 @@
+import { ItemContainer } from "@/module/canvas-item/container/types";
+import { Image } from "@/module/canvas-item/image/types";
+import { ItemTypes } from "@/module/canvas-item/types";
+
 export interface Block {
   id: string;
   items: Array<Item["id"]>;
@@ -9,19 +13,17 @@ export interface Blocks {
 
 export type BlockList = Array<Block["id"]>;
 
-export interface Item {
+export interface ItemImage {
   id: string;
-  x: number;
-  y: number;
+  container: ItemContainer;
+  type: ItemTypes.IMAGE;
+  content: Image;
 }
+
+export type Item = ItemImage;
 
 export interface Items {
   [key: string]: Item;
-}
-
-export interface Coord {
-  x: number;
-  y: number;
 }
 
 export type ItemList = Array<Item["id"]>;
