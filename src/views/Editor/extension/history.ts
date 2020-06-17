@@ -1,19 +1,13 @@
-import {
-  Initializer,
-  EventName,
-  SourceName,
-  ActionParams,
-  ActionName,
-  ActionFunction
-} from "..";
+import { Initializer, ActionParams } from "..";
+import { ActionName, EventName, SourceName } from ".";
 import { History } from "@/module/history";
 
-export const enum HistoryActionName {
+export enum HistoryActionName {
   UNDO_HISTORY = "undo-history",
   REDO_HISTORY = "redo-history"
 }
 
-export const enum HistorySourceName {
+export enum HistorySourceName {
   USER_HISTORY_UNDO = "user-history-undo",
   USER_HISTORY_REDO = "user-history-redo"
 }
@@ -32,7 +26,7 @@ export function history() {
           name: ActionName.DELETE_ITEM,
           value: {
             itemId: item.id,
-            source: HistorySourceName.USER_HISTORY_UNDO
+            source: SourceName.USER_HISTORY_UNDO
           },
           toConfirm: true
         };
@@ -41,7 +35,7 @@ export function history() {
           name: ActionName.CREATE_ITEM,
           value: {
             item,
-            source: HistorySourceName.USER_HISTORY_REDO
+            source: SourceName.USER_HISTORY_REDO
           },
           toConfirm: true
         };
@@ -62,7 +56,7 @@ export function history() {
           value: {
             originalItem: updatedItem,
             itemToUpdate: originalItem,
-            source: HistorySourceName.USER_HISTORY_UNDO
+            source: SourceName.USER_HISTORY_UNDO
           },
           toConfirm: true
         };
@@ -72,7 +66,7 @@ export function history() {
           value: {
             originalItem,
             itemToUpdate: updatedItem,
-            source: HistorySourceName.USER_HISTORY_REDO
+            source: SourceName.USER_HISTORY_REDO
           },
           toConfirm: true
         };
@@ -81,7 +75,7 @@ export function history() {
       }
     });
 
-    registerAction(HistoryActionName.UNDO_HISTORY, () => {
+    registerAction(ActionName.UNDO_HISTORY, () => {
       const historyObject = historyStore.undoHistory();
       if (!historyObject?.undo) {
         return Promise.resolve();
@@ -94,7 +88,7 @@ export function history() {
       return Promise.all(undoPromises);
     });
 
-    registerAction(HistoryActionName.REDO_HISTORY, () => {
+    registerAction(ActionName.REDO_HISTORY, () => {
       const historyObject = historyStore.redoHistory();
       if (!historyObject?.redo) {
         return Promise.resolve();

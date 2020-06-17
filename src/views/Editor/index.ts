@@ -1,15 +1,10 @@
 import { defineComponent, computed, onBeforeUnmount } from "vue";
-import { useStore, mapState } from "vuex";
+import { useStore } from "vuex";
 import CanvasEditor from "@/components/CanvasEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
-import {
-  declareMethods,
-  HistoryActionName,
-  HistorySourceName,
-  SessionSourceName
-} from "./extension";
+import { declareMethods, ActionName, SourceName, EventName } from "./extension";
 
 export type Confirm<T = Record<string, any>> = (
   arg0: ActionParams<T>,
@@ -18,30 +13,30 @@ export type Confirm<T = Record<string, any>> = (
 ) => void;
 
 export type ActionValue<T = Record<string, any>> = {
-  source: SourceName | HistorySourceName | SessionSourceName;
+  source: SourceName;
 } & T;
 
 export interface ActionParams<T = Record<string, any>> {
-  name: ActionName | HistoryActionName;
+  name: ActionName;
   value: ActionValue<T>;
   toConfirm?: boolean;
 }
 
-export const enum SourceName {
+export enum CoreSourceName {
   USER_CLICK_CREATE = "user-click-create",
   USER_MOVING_ITEM = "user-moving-item",
   USER_MOVED_ITEM = "user-moved-item",
   USER_CLICK_HISTORY = "user-click-history"
 }
 
-export const enum ActionName {
+export enum CoreActionName {
   CREATE_ITEM = "create-item",
   UPDATE_ITEM = "update-item",
   DELETE_ITEM = "delete-item",
   CLEAR_CANVAS = "clear-canvas"
 }
 
-export const enum EventName {
+export enum CoreEventName {
   ITEM_CREATED = "item-created",
   ITEM_UPDATED = "item-updated",
   ITEM_DELETED = "item-deleted",
@@ -58,7 +53,7 @@ export interface Initializer {
   props: Props;
   setConfirmAction: (confirm: Confirm) => void;
   registerAction: (
-    name: ActionName | HistoryActionName,
+    name: ActionName,
     func: (params: ActionValue<any>) => Promise<any>
   ) => void;
   runAction: (action: ActionParams) => Promise<any>;
@@ -119,11 +114,11 @@ export default defineComponent({
 
     // Init the action container and runner
     const actions = {} as Record<
-      ActionName | HistoryActionName,
+      ActionName,
       (act: ActionValue) => Promise<any>
     >;
     const registerAction = (
-      name: ActionName | HistoryActionName,
+      name: ActionName,
       func: (params: ActionValue<any>) => Promise<any>
     ) => {
       if (actions[name]) {
@@ -215,7 +210,7 @@ export default defineComponent({
     };
     const onClickUndo = () => {
       runAction({
-        name: HistoryActionName.UNDO_HISTORY,
+        name: ActionName.UNDO_HISTORY,
         value: {
           source: SourceName.USER_CLICK_HISTORY
         }
@@ -223,7 +218,7 @@ export default defineComponent({
     };
     const onClickRedo = () => {
       runAction({
-        name: HistoryActionName.REDO_HISTORY,
+        name: ActionName.REDO_HISTORY,
         value: {
           source: SourceName.USER_CLICK_HISTORY
         }

@@ -2,10 +2,10 @@ import * as firebase from "firebase/app";
 // Add the Firebase products that you want to use
 import "firebase/auth";
 import "firebase/database";
-import { Confirm, ActionParams, ActionName, Initializer } from "../../";
-import { HistoryActionName } from "../history";
+import { Confirm, ActionParams, Initializer } from "../../";
+import { ActionName } from "../";
 
-export const enum SessionSourceName {
+export enum SessionSourceName {
   SESSION_INIT = "session-init",
   SESSION_RESPONSE = "session-response",
   SESSION_UNDO = "session-undo"
@@ -19,7 +19,6 @@ function initFirebase() {
       authDomain: `${dbName}.firebaseapp.com`,
       databaseURL: `https://${dbName}.firebaseio.com`
     };
-    console.log(config);
     firebase.initializeApp(config);
   }
 }
@@ -74,7 +73,7 @@ export function session() {
         localQueue[localQueue.length - 1] !== prevChildKey
       ) {
         const undoAction: ActionParams = {
-          name: HistoryActionName.UNDO_HISTORY,
+          name: ActionName.UNDO_HISTORY,
           value: {
             source: SessionSourceName.SESSION_UNDO
           },
