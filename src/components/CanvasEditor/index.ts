@@ -1,8 +1,10 @@
 import { defineComponent, toRefs } from "vue";
 import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
-import CanvasItemContainer from "@/module/canvas-item/container/component.vue";
-import CanvasItemImage from "@/module/canvas-item/image/component.vue";
-import { ItemTypes } from "@/module/canvas-item/types";
+import {
+  ItemTypes,
+  itemComponents,
+  itemComponentMapper
+} from "@/module/canvas-item";
 
 interface Props {
   blocks: Blocks;
@@ -14,8 +16,7 @@ interface Props {
 export default defineComponent({
   name: "CanvasEditor",
   components: {
-    CanvasItemContainer: CanvasItemContainer as any,
-    CanvasItemImage: CanvasItemImage as any
+    ...(itemComponents as any)
   },
   props: {
     blocks: {
@@ -87,8 +88,8 @@ export default defineComponent({
 
     return {
       ...props,
-      itemTypes,
-      mouseDownItem
+      mouseDownItem,
+      itemComponentMapper
     };
   }
 });

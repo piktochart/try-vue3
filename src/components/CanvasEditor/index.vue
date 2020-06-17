@@ -7,8 +7,8 @@
       v-bind="items[itemId].container"
       @mousedown.prevent="mouseDownItem($event, itemId)"
     >
-      <canvas-item-image
-        v-if="items[itemId].type === itemTypes.IMAGE"
+      <component
+        :is="itemComponentMapper(items[itemId].type)"
         v-bind="items[itemId].content"
       />
     </canvas-item-container>

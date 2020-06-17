@@ -1,4 +1,4 @@
-import { ItemTypes } from "../types";
+import { ItemTypes } from "..";
 
 export interface ItemContainer {
   x: number;

@@ -1,6 +1,6 @@
 import { ItemContainer } from "@/module/canvas-item/container/types";
 import { Image } from "@/module/canvas-item/image/types";
-import { ItemTypes } from "@/module/canvas-item/types";
+import { ItemTypes } from "@/module/canvas-item";
 
 export interface Block {
   id: string;

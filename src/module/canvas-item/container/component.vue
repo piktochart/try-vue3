@@ -6,7 +6,7 @@
 <script lang="ts">
 import { defineComponent, Prop, computed } from "vue";
 import { ItemContainer } from "./types";
-import { ItemTypes } from "../types";
+import { ItemTypes } from "..";
 
 type Props = ItemContainer;
 

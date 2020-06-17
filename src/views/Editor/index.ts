@@ -5,7 +5,7 @@ import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
 import { useExtension, ActionName, SourceName, EventName } from "./extension";
-import { ItemTypes } from "@/module/canvas-item/types";
+import { ItemTypes } from "@/module/canvas-item";
 
 export type Confirm<T = Record<string, any>> = (
   arg0: ActionParams<T>,
