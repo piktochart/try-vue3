@@ -28,15 +28,31 @@ export default defineComponent({
     h: {
       type: Number,
       required: true
+    },
+    tempX: {
+      type: Number,
+      default: 0
+    },
+    tempY: {
+      type: Number,
+      default: 0
+    },
+    tempW: {
+      type: Number,
+      default: 0
+    },
+    tempH: {
+      type: Number,
+      default: 0
     }
   },
   setup(props) {
     const containerStyle = computed(() => {
       return {
-        left: props.x + "px",
-        top: props.y + "px",
-        width: props.w + "px",
-        height: props.h + "px"
+        left: props.x + props.tempX + "px",
+        top: props.y + props.tempY + "px",
+        width: props.w + props.tempW + "px",
+        height: props.h + props.tempH + "px"
       };
     });
 

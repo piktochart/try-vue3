@@ -1,5 +1,3 @@
-import { ItemTypes } from "..";
-
 export interface ItemContainer {
   x: number;
   y: number;

@@ -16,8 +16,8 @@ export const itemComponents = {
 export const itemComponentMapper = (type: ItemTypes) => {
   switch (type) {
     case ItemTypes.IMAGE:
-      return "CanvasItemImage";
+      return CanvasItemImage;
     case ItemTypes.TEXT:
-      return "CanvasItemText";
+      return CanvasItemText;
   }
 };

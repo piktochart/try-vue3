@@ -1,80 +1,68 @@
-import { defineComponent } from "vue";
-import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
+import { defineComponent, computed, h } from "vue";
 import {
-  ItemTypes,
-  itemComponents,
-  itemComponentMapper
-} from "@/module/canvas-item";
-
-interface Props {
-  blocks: Blocks;
-  blockList: BlockList;
-  items: Items;
-  itemList: ItemList;
-}
+  Blocks,
+  BlockList,
+  Item,
+  Items,
+  ItemList,
+  Selected
+} from "@/types/canvas";
+import { itemComponents, itemComponentMapper } from "@/module/canvas-item";
+import { isEmpty } from "@/helper";
+import { useStore } from "vuex";
+import { State as CanvasState } from "@/store/canvas";
 
 export default defineComponent({
   name: "CanvasEditor",
   components: {
     ...(itemComponents as any)
   },
-  props: {
-    blocks: {
-      type: Object,
-      required: true
-    },
-    blockList: {
-      type: Array,
-      required: true
-    },
-    items: {
-      type: Object,
-      required: true
-    },
-    itemList: {
-      type: Array,
-      required: true
-    }
-  },
-  setup(props: Props, { emit }) {
-    const mouseDownItem = (e: MouseEvent, itemId: Item["id"]) => {
+  setup(_, { emit }) {
+    const store = useStore<{ canvas: CanvasState }>();
+    // Store Getters
+    const canvasState = {
+      blocks: computed(() => store.state.canvas.blocks),
+      blockList: computed(() => store.state.canvas.blockList),
+      items: computed(() => store.state.canvas.items),
+      itemList: computed(() => store.state.canvas.itemList),
+      selectedIds: computed(() => store.state.canvas.selectedIds)
+    };
+
+    const onMouseDownItem = (e: MouseEvent, itemId: Item["id"]) => {
+      e.preventDefault();
       const mouseDownCoord = {
         x: e.pageX,
         y: e.pageY
       };
-      const chosenItem: Item = Object.assign({}, props.items[itemId]);
+
+      emit("mousedown-item", {
+        itemId,
+        mouseEvent: e
+      });
+
       const mouseMoveItem = (e: MouseEvent) => {
-        if (mouseDownCoord && chosenItem) {
+        if (mouseDownCoord && !isEmpty(canvasState.selectedIds.value)) {
           const moveCoordinate = {
             x: e.pageX - mouseDownCoord.x,
             y: e.pageY - mouseDownCoord.y
           };
-          const id = chosenItem.id;
-          if (id) {
-            emit("moving-item", {
-              item: chosenItem,
-              x: chosenItem.container.x + moveCoordinate.x,
-              y: chosenItem.container.y + moveCoordinate.y
-            });
-          }
+          emit("moving-item", {
+            x: moveCoordinate.x,
+            y: moveCoordinate.y
+          });
         }
       };
 
       const mouseUpItem = (e: MouseEvent) => {
-        if (mouseDownCoord && chosenItem) {
+        if (mouseDownCoord && !isEmpty(canvasState.selectedIds.value)) {
           const moveCoordinate = {
-            item: chosenItem,
             x: e.pageX - mouseDownCoord.x,
             y: e.pageY - mouseDownCoord.y
           };
-          const id = chosenItem.id;
-          if (id) {
-            emit("moved-item", {
-              item: chosenItem,
-              x: chosenItem.container.x + moveCoordinate.x,
-              y: chosenItem.container.y + moveCoordinate.y
-            });
-          }
+          emit("moved-item", {
+            x: moveCoordinate.x,
+            y: moveCoordinate.y
+          });
         }
         document.removeEventListener("mousemove", mouseMoveItem);
         document.removeEventListener("mouseup", mouseUpItem);
@@ -84,12 +72,46 @@ export default defineComponent({
       document.addEventListener("mouseup", mouseUpItem);
     };
 
-    const itemTypes = ItemTypes;
-
     return {
-      ...props,
-      mouseDownItem,
-      itemComponentMapper
+      ...canvasState,
+      onMouseDownItem
     };
+  },
+  render() {
+    const getItems = (itemList: ItemList) => {
+      return itemList.map(itemId => {
+        const tempContainer = this.items[itemId].temp?.container;
+        const container = tempContainer
+          ? { ...this.items[itemId].container, ...tempContainer }
+          : this.items[itemId].container;
+
+        return h(
+          itemComponents.CanvasItemContainer as any,
+          {
+            id: `item-container-${itemId}`,
+            ...container,
+            class: this.selectedIds[itemId] && "selected",
+            onMouseDown: (e: MouseEvent) => this.onMouseDownItem(e, itemId)
+          },
+          [
+            h(itemComponentMapper(this.items[itemId].type) as any, {
+              ...this.items[itemId].content
+            })
+          ]
+        );
+      });
+    };
+
+    const blocks = this.blockList.map(blockId => {
+      return h(
+        "div",
+        {
+          class: "block"
+        },
+        [getItems(this.blocks[blockId].items)]
+      );
+    });
+
+    return blocks;
   }
 });

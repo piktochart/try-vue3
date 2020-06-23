@@ -12,12 +12,15 @@
         <button @click="onClickRedo">Redo</button>
       </div>
     </div>
+    {{ selectedIds }}
     <canvas-editor
       ref="canvasEditor"
       :blocks="blocks"
       :blockList="blockList"
       :items="items"
       :itemList="itemList"
+      :selectedIds="selectedIds"
+      @mousedown-item="onMouseDownItem"
       @moving-item="onMovingItem"
       @moved-item="onMovedItem"
     />

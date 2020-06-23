@@ -6,6 +6,7 @@ import { Item } from "@/types/canvas";
 import mitt from "mitt";
 import { useExtension, ActionName, SourceName, EventName } from "./extension";
 import { ItemTypes } from "@/module/canvas-item";
+import { DeepPartial } from "utility-types";
 
 export type Confirm<T = Record<string, any>> = (
   arg0: ActionParams<T>,
@@ -25,6 +26,7 @@ export interface ActionParams<T = Record<string, any>> {
 
 export enum CoreSourceName {
   USER_CLICK_CREATE = "user-click-create",
+  USER_MOUSEDOWN_ITEM = "user-mousedown-item",
   USER_MOVING_ITEM = "user-moving-item",
   USER_MOVED_ITEM = "user-moved-item",
   USER_CLICK_HISTORY = "user-click-history"
@@ -33,15 +35,21 @@ export enum CoreSourceName {
 export enum CoreActionName {
   CREATE_ITEM = "create-item",
   UPDATE_ITEM = "update-item",
+  UPDATE_ITEM_TEMP = "update-item-temp",
   DELETE_ITEM = "delete-item",
-  CLEAR_CANVAS = "clear-canvas"
+  CLEAR_CANVAS = "clear-canvas",
+  NEW_SELECTION = "new-selection",
+  ADD_SELECTION = "add-selection",
+  REMOVE_SELECTION = "remove-selection",
+  CLEAR_SELECTION = "clear-selection"
 }
 
 export enum CoreEventName {
   ITEM_CREATED = "item-created",
   ITEM_UPDATED = "item-updated",
   ITEM_DELETED = "item-deleted",
-  CANVAS_CLEARED = "canvas-cleared"
+  CANVAS_CLEARED = "canvas-cleared",
+  ITEM_SELECTED = "item-selected"
 }
 
 export type ActionFunction<P = any, R = any> = (
@@ -95,7 +103,8 @@ export default defineComponent({
       blocks: computed(() => store.state.canvas.blocks),
       blockList: computed(() => store.state.canvas.blockList),
       items: computed(() => store.state.canvas.items),
-      itemList: computed(() => store.state.canvas.itemList)
+      itemList: computed(() => store.state.canvas.itemList),
+      selectedIds: computed(() => store.state.canvas.selectedIds)
     };
 
     // Register canvas store
@@ -164,8 +173,23 @@ export default defineComponent({
     );
 
     registerAction(
+      ActionName.UPDATE_ITEM_TEMP,
+      async (params: ActionValue<{ itemTempToUpdate: DeepPartial<Item> }>) => {
+        const itemTempToUpdate = params.itemTempToUpdate;
+        const updatedItem = await store.dispatch("canvas/updateItemTemp", {
+          itemTempToUpdate
+        });
+        emitter.emit(EventName.ITEM_UPDATED, {
+          ...params,
+          updatedItem
+        });
+        return updatedItem;
+      }
+    );
+
+    registerAction(
       ActionName.UPDATE_ITEM,
-      async (params: ActionValue<{ itemToUpdate: Item }>) => {
+      async (params: ActionValue<{ itemToUpdate: DeepPartial<Item> }>) => {
         const itemToUpdate = params.itemToUpdate;
         const updatedItem = await store.dispatch("canvas/updateItem", {
           itemToUpdate
@@ -190,6 +214,20 @@ export default defineComponent({
           deletedItem
         });
         return deletedItem;
+      }
+    );
+
+    registerAction(
+      ActionName.NEW_SELECTION,
+      async (params: ActionValue<{ itemId: Item["id"] }>) => {
+        const selectedIds = await store.dispatch("canvas/newSelection", {
+          itemIds: [params.itemId]
+        });
+        emitter.emit(EventName.ITEM_SELECTED, {
+          ...params,
+          selectedIds
+        });
+        return selectedIds;
       }
     );
 
@@ -256,33 +294,43 @@ export default defineComponent({
         }
       });
     };
+    const onMouseDownItem = (params: { itemId: Item["id"]; e: MouseEvent }) => {
+      const itemId = params.itemId;
+      runAction({
+        name: ActionName.NEW_SELECTION,
+        value: {
+          itemId,
+          source: SourceName.USER_MOUSEDOWN_ITEM
+        }
+      });
+    };
     const onMovingItem = (params: { x: number; y: number; item: Item }) => {
-      const originalItem = params.item;
-      const itemToUpdate = {
-        ...originalItem,
+      const selectedItemId = Object.keys(canvasState.selectedIds.value)[0];
+      const originalItem = canvasState.items.value[selectedItemId];
+      const itemTempToUpdate: DeepPartial<Item> = {
+        id: selectedItemId,
         container: {
-          ...originalItem.container,
-          x: params.x,
-          y: params.y
+          x: originalItem.container.x + params.x,
+          y: originalItem.container.y + params.y
         }
       };
       runAction({
-        name: ActionName.UPDATE_ITEM,
+        name: ActionName.UPDATE_ITEM_TEMP,
         value: {
           originalItem,
-          itemToUpdate,
+          itemTempToUpdate,
           source: SourceName.USER_MOVING_ITEM
         }
       });
     };
     const onMovedItem = (params: { x: number; y: number; item: Item }) => {
-      const originalItem = params.item;
-      const itemToUpdate = {
-        ...originalItem,
+      const selectedItemId = Object.keys(canvasState.selectedIds.value)[0];
+      const { temp, ...originalItem } = canvasState.items.value[selectedItemId];
+      const itemToUpdate: DeepPartial<Item> = {
+        id: selectedItemId,
         container: {
-          ...originalItem.container,
-          x: params.x,
-          y: params.y
+          x: originalItem.container.x + params.x,
+          y: originalItem.container.y + params.y
         }
       };
       runAction({
@@ -309,6 +357,7 @@ export default defineComponent({
       ...canvasState,
       onClickCreateImage,
       onClickCreateText,
+      onMouseDownItem,
       onClickUndo,
       onClickRedo,
       onMovingItem,
