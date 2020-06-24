@@ -1,12 +1,5 @@
 import { defineComponent, computed, h } from "vue";
-import {
-  Blocks,
-  BlockList,
-  Item,
-  Items,
-  ItemList,
-  Selected
-} from "@/types/canvas";
+import { Item, ItemList } from "@/types/canvas";
 import { itemComponents, itemComponentMapper } from "@/module/canvas-item";
 import { isEmpty } from "@/helper";
 import { useStore } from "vuex";
@@ -84,6 +77,10 @@ export default defineComponent({
         const container = tempContainer
           ? { ...this.items[itemId].container, ...tempContainer }
           : this.items[itemId].container;
+        const tempContent = this.items[itemId].temp?.content;
+        const content = tempContent
+          ? { ...this.items[itemId].content, ...tempContent }
+          : this.items[itemId].content;
 
         return h(
           itemComponents.CanvasItemContainer as any,
@@ -95,7 +92,7 @@ export default defineComponent({
           },
           [
             h(itemComponentMapper(this.items[itemId].type) as any, {
-              ...this.items[itemId].content
+              ...content
             })
           ]
         );
