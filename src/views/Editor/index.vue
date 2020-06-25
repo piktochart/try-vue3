@@ -8,8 +8,12 @@
       <div><button @click="onClickCreateImage">Add image</button></div>
       <div><button @click="onClickCreateText">Add text</button></div>
       <div>
-        <button @click="onClickUndo">Undo</button>
-        <button @click="onClickRedo">Redo</button>
+        <button :disabled="!refHistory.canUndo" @click="onClickUndo">
+          Undo
+        </button>
+        <button :disabled="!refHistory.canRedo" @click="onClickRedo">
+          Redo
+        </button>
       </div>
     </div>
     {{ selectedIds }}

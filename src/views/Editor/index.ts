@@ -345,7 +345,7 @@ export default defineComponent({
     };
 
     // Init Extensions
-    useExtension({
+    const ext = useExtension({
       emitter,
       props,
       setConfirmAction,
@@ -353,8 +353,11 @@ export default defineComponent({
       registerAction
     });
 
+    console.log(ext);
+
     const toReturn = {
       ...canvasState,
+      ...ext,
       onClickCreateImage,
       onClickCreateText,
       onMouseDownItem,

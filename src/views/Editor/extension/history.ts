@@ -1,3 +1,4 @@
+import { reactive, toRefs } from "vue";
 import { Initializer, ActionParams } from "..";
 import { ActionName, EventName, SourceName } from ".";
 import { History } from "@/module/history";
@@ -14,6 +15,10 @@ export enum HistorySourceName {
 
 export function history({ emitter, runAction, registerAction }: Initializer) {
   const historyStore = History<ActionParams>();
+  const refHistory = reactive({
+    canUndo: false,
+    canRedo: false
+  });
 
   emitter.on(EventName.ITEM_CREATED, (params: any) => {
     if (params.source === SourceName.USER_CLICK_CREATE) {
@@ -99,4 +104,14 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
     });
     return Promise.all(redoPromises);
   });
+
+  historyStore.onHistoryChange((idx, len) => {
+    const historyAvailable = len > 0;
+    refHistory.canUndo = historyAvailable && idx >= 0;
+    refHistory.canRedo = historyAvailable && idx < len - 1;
+  });
+
+  return {
+    ...toRefs(refHistory)
+  };
 }

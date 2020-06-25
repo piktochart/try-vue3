@@ -22,7 +22,11 @@ export const EventName = {
 };
 
 export function useExtension(vm: Initializer) {
-  history(vm);
+  const refHistory = history(vm);
   tracking(vm);
   session(vm);
+
+  return {
+    refHistory
+  };
 }
