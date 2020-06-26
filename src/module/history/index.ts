@@ -40,7 +40,7 @@ export function History<P>() {
     if (currIndex >= 0) {
       currIndex--;
       historyChanged();
-      return histories[currIndex];
+      return histories[currIndex + 1];
     } else {
       return undefined;
     }

@@ -47,6 +47,7 @@ export enum CoreActionName {
 export enum CoreEventName {
   ITEM_CREATED = "item-created",
   ITEM_UPDATED = "item-updated",
+  ITEM_TEMP_UPDATED = "item-temp-updated",
   ITEM_DELETED = "item-deleted",
   CANVAS_CLEARED = "canvas-cleared",
   ITEM_SELECTED = "item-selected"
@@ -179,7 +180,7 @@ export default defineComponent({
         const updatedItem = await store.dispatch("canvas/updateItemTemp", {
           itemTempToUpdate
         });
-        emitter.emit(EventName.ITEM_UPDATED, {
+        emitter.emit(EventName.ITEM_TEMP_UPDATED, {
           ...params,
           updatedItem
         });
