@@ -2,6 +2,7 @@ import { Module } from "vuex";
 import merge from "deepmerge";
 import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
 import { DeepPartial } from "utility-types";
+import { isObjectEmpty } from "@/helper";
 
 export interface State {
   blocks: Blocks;
@@ -27,6 +28,11 @@ const getInitialState = (): State => ({
 export const canvasModule: Module<State, any> = {
   namespaced: true,
   state: getInitialState(),
+  getters: {
+    isSelectionEmpty(state) {
+      return isObjectEmpty(state.selectedIds);
+    }
+  },
   mutations: {
     createItem(state, newItem: Item) {
       state.items[newItem.id] = newItem;

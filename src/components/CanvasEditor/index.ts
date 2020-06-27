@@ -1,7 +1,6 @@
 import { defineComponent, computed, h } from "vue";
 import { Item, ItemList } from "@/types/canvas";
 import { itemComponents, itemComponentMapper } from "@/module/canvas-item";
-import { isEmpty } from "@/helper";
 import { useStore } from "vuex";
 import { State as CanvasState } from "@/store/canvas";
 
@@ -18,7 +17,8 @@ export default defineComponent({
       blockList: computed(() => store.state.canvas.blockList),
       items: computed(() => store.state.canvas.items),
       itemList: computed(() => store.state.canvas.itemList),
-      selectedIds: computed(() => store.state.canvas.selectedIds)
+      selectedIds: computed(() => store.state.canvas.selectedIds),
+      isSelectionEmpty: computed(() => store.getters["canvas/isSelectionEmpty"])
     };
 
     const onMouseDownItem = (e: MouseEvent, itemId: Item["id"]) => {
@@ -34,7 +34,7 @@ export default defineComponent({
       });
 
       const mouseMoveItem = (e: MouseEvent) => {
-        if (mouseDownCoord && !isEmpty(canvasState.selectedIds.value)) {
+        if (mouseDownCoord && !canvasState.isSelectionEmpty.value) {
           const moveCoordinate = {
             x: e.pageX - mouseDownCoord.x,
             y: e.pageY - mouseDownCoord.y
@@ -47,7 +47,7 @@ export default defineComponent({
       };
 
       const mouseUpItem = (e: MouseEvent) => {
-        if (mouseDownCoord && !isEmpty(canvasState.selectedIds.value)) {
+        if (mouseDownCoord && !canvasState.isSelectionEmpty.value) {
           const moveCoordinate = {
             x: e.pageX - mouseDownCoord.x,
             y: e.pageY - mouseDownCoord.y
