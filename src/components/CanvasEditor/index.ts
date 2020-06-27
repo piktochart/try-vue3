@@ -90,11 +90,12 @@ export default defineComponent({
             class: this.selectedIds[itemId] && "selected",
             onMouseDown: (e: MouseEvent) => this.onMouseDownItem(e, itemId)
           },
-          [
-            h(itemComponentMapper(this.items[itemId].type) as any, {
-              ...content
-            })
-          ]
+          {
+            default: () =>
+              h(itemComponentMapper(this.items[itemId].type) as any, {
+                ...content
+              })
+          }
         );
       });
     };
@@ -105,7 +106,7 @@ export default defineComponent({
         {
           class: "block"
         },
-        [getItems(this.blocks[blockId].items)]
+        getItems(this.blocks[blockId].items)
       );
     });
 
