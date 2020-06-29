@@ -1,6 +1,6 @@
 import { defineComponent, computed, onBeforeUnmount } from "vue";
 import { useStore } from "vuex";
-import CanvasEditor from "@/components/CanvasEditor/index.vue";
+import CanvasEditor from "./components/CanvasEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
