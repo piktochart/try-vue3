@@ -4,4 +4,6 @@
   </div>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+@import url("~bootstrap/dist/css/bootstrap.min.css");
+</style>
