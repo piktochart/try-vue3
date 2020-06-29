@@ -4,6 +4,7 @@ import "firebase/auth";
 import "firebase/database";
 import { Confirm, ActionParams, Initializer } from "../../";
 import { ActionName } from "../";
+import { onBeforeMount } from "vue";
 
 export enum SessionSourceName {
   SESSION_INIT = "session-init",
@@ -52,15 +53,17 @@ export async function session({
   };
   setConfirmAction(confirm);
 
-  // clear the canvas since the state will be reproduced by firebase
-  const clearCanvasAction: ActionParams = {
-    name: ActionName.CLEAR_CANVAS,
-    value: {
-      source: SessionSourceName.SESSION_INIT
-    },
-    toConfirm: false
-  };
-  await runAction(clearCanvasAction);
+  // clear the canvas in the beginning, since the state will be reproduced by firebase
+  onBeforeMount(() => {
+    const clearCanvasAction: ActionParams = {
+      name: ActionName.CLEAR_CANVAS,
+      value: {
+        source: SessionSourceName.SESSION_INIT
+      },
+      toConfirm: false
+    };
+    runAction(clearCanvasAction);
+  });
 
   dbRef.on("child_added", (snapshot, prevChildKey) => {
     // there must be a snapshot key to determine the queue of the action
