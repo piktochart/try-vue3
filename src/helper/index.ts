@@ -4,3 +4,7 @@ export function isObjectEmpty(obj: Record<string, any>) {
   }
   return true;
 }
+
+export function getId(): string {
+  return Math.round(Math.random() * 1000000000).toString();
+}

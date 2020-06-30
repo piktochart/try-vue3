@@ -1,13 +1,8 @@
 <template>
   <div class="container-full">
     <div class="d-flex">
-      <div class="toolbar-menu p-2">
-        Toolbar Icons
-      </div>
-      <div class="toolbar-content p-2 border-left">
-        Toolbar
-        <div><button @click="onClickCreateImage">Add image</button></div>
-        <div><button @click="onClickCreateText">Add text</button></div>
+      <div>
+        <toolbar-editor v-on="refToolbar.listeners" />
       </div>
       <div class="flex-fill border-left">
         <div class="row p-3">
@@ -35,12 +30,3 @@
   </div>
 </template>
 <script lang="ts" src="./"></script>
-<style scoped>
-.toolbar-menu {
-  width: 72px;
-}
-
-.toolbar-content {
-  width: 280px;
-}
-</style>

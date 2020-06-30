@@ -3,6 +3,7 @@ import { history, HistoryActionName, HistorySourceName } from "./history";
 import { tracking } from "./tracking";
 import { session, SessionSourceName } from "./session";
 import { canvas } from "./canvas";
+import { toolbar } from "./toolbar";
 
 export type ActionName = CoreActionName | HistoryActionName;
 export const ActionName = {
@@ -27,8 +28,10 @@ export function useExtension(vm: Initializer) {
   canvas(vm);
   tracking(vm);
   session(vm);
+  const refToolbar = toolbar(vm);
 
   return {
-    refHistory
+    refHistory,
+    refToolbar
   };
 }

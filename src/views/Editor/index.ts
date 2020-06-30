@@ -1,6 +1,7 @@
 import { defineComponent, computed, onBeforeUnmount } from "vue";
 import { useStore } from "vuex";
 import CanvasEditor from "./components/CanvasEditor/index.vue";
+import ToolbarEditor from "./components/ToolbarEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
@@ -73,29 +74,18 @@ export interface Props {
   id: string;
 }
 
-function getId(): string {
-  return Math.round(Math.random() * 1000000000).toString();
-}
-
 export default defineComponent({
   name: "Editor",
   components: {
-    CanvasEditor: CanvasEditor as any
+    // TODO: Add any as there's type error on using imported component
+    CanvasEditor: CanvasEditor as any,
+    ToolbarEditor: ToolbarEditor as any
   },
   props: {
     id: {
       type: String,
       required: true
     }
-  },
-  data() {
-    const confirm: Confirm = (params, res) => res(true);
-    const data = {
-      confirm,
-      emitter: mitt()
-    };
-
-    return data;
   },
   setup(props, ctx) {
     const store = useStore<{ canvas: CanvasState }>();
@@ -153,52 +143,6 @@ export default defineComponent({
     };
 
     // User Events
-    const onClickCreateImage = () => {
-      const item: Item = {
-        id: getId(),
-        container: {
-          x: Math.random() * 300,
-          y: Math.random() * 300,
-          w: 150,
-          h: 120
-        },
-        type: ItemTypes.IMAGE,
-        content: {
-          url: require("@/assets/test.jpg")
-        }
-      };
-      runAction({
-        name: ActionName.CREATE_ITEM,
-        value: {
-          item,
-          source: SourceName.USER_CLICK_CREATE
-        },
-        toConfirm: true
-      });
-    };
-    const onClickCreateText = () => {
-      const item: Item = {
-        id: getId(),
-        container: {
-          x: Math.random() * 300,
-          y: Math.random() * 300,
-          w: 100,
-          h: 100
-        },
-        type: ItemTypes.TEXT,
-        content: {
-          text: "Hello World"
-        }
-      };
-      runAction({
-        name: ActionName.CREATE_ITEM,
-        value: {
-          item,
-          source: SourceName.USER_CLICK_CREATE
-        },
-        toConfirm: true
-      });
-    };
     const onClickUndo = () => {
       runAction({
         name: ActionName.UNDO_HISTORY,
@@ -275,10 +219,7 @@ export default defineComponent({
     });
 
     const toReturn = {
-      ...canvasState,
       ...ext,
-      onClickCreateImage,
-      onClickCreateText,
       onMouseDownItem,
       onClickUndo,
       onClickRedo,
