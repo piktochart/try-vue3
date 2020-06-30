@@ -1,6 +1,5 @@
 import CanvasItemContainer from "./container/component.vue";
-import CanvasItemImage from "./image/component.vue";
-import CanvasItemText from "./text/component.vue";
+import { defineAsyncComponent } from "vue";
 
 export enum ItemTypes {
   IMAGE = "image",
@@ -9,15 +8,15 @@ export enum ItemTypes {
 
 export const itemComponents = {
   CanvasItemContainer,
-  CanvasItemImage,
-  CanvasItemText
+  CanvasItemImage: defineAsyncComponent(() => import("./image/component.vue")),
+  CanvasItemText: defineAsyncComponent(() => import("./text/component.vue"))
 };
 
 export const itemComponentMapper = (type: ItemTypes) => {
   switch (type) {
     case ItemTypes.IMAGE:
-      return CanvasItemImage;
+      return itemComponents.CanvasItemImage;
     case ItemTypes.TEXT:
-      return CanvasItemText;
+      return itemComponents.CanvasItemText;
   }
 };
