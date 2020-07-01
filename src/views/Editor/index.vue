@@ -19,7 +19,6 @@
         </div>
         <div class="bg-light p-5">
           <canvas-editor
-            ref="canvasEditor"
             @mousedown-item="onMouseDownItem"
             @moving-item="onMovingItem"
             @moved-item="onMovedItem"
