@@ -31,8 +31,7 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
         value: {
           itemId: item.id,
           source: SourceName.USER_HISTORY_UNDO
-        },
-        toConfirm: true
+        }
       };
       history.undo.push(undoAction);
       const redoAction: ActionParams = {
@@ -40,8 +39,7 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
         value: {
           item,
           source: SourceName.USER_HISTORY_REDO
-        },
-        toConfirm: true
+        }
       };
       history.redo.push(redoAction);
       historyStore.saveHistory(history);
@@ -61,8 +59,7 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
           originalItem: updatedItem,
           itemToUpdate: originalItem,
           source: SourceName.USER_HISTORY_UNDO
-        },
-        toConfirm: true
+        }
       };
       history.undo.push(undoAction);
       const redoAction: ActionParams = {
@@ -71,8 +68,7 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
           originalItem,
           itemToUpdate: updatedItem,
           source: SourceName.USER_HISTORY_REDO
-        },
-        toConfirm: true
+        }
       };
       history.redo.push(redoAction);
       historyStore.saveHistory(history);

@@ -22,7 +22,6 @@ export type ActionValue<T = Record<string, any>> = {
 export interface ActionParams<T = Record<string, any>> {
   name: ActionName;
   value: ActionValue<T>;
-  toConfirm?: boolean;
 }
 
 export enum CoreSourceName {
@@ -108,7 +107,7 @@ export default defineComponent({
     const emitter = mitt();
 
     // Init the action confirmer
-    let confirmAction: Confirm = (params, res) => res(true);
+    let confirmAction: Confirm = (_, res) => res(true);
     const setConfirmAction = (confirm: Confirm) => {
       confirmAction = confirm;
     };
@@ -128,18 +127,12 @@ export default defineComponent({
       actions[name] = func;
     };
     const runAction = async (action: ActionParams) => {
-      // due to the asynchronous process on each action,
-      // it needs the promise queue to ensure all actions run in appropriate order (FIFO)
-      if (action.toConfirm) {
-        const isConfirm = await new Promise((res, rej) => {
-          confirmAction(action, res, rej);
-        });
-        return isConfirm
-          ? actions[action.name](action.value)
-          : Promise.resolve();
-      } else {
-        return actions[action.name](action.value);
-      }
+      // TODO: due to the asynchronous process on each action,
+      // we need a promise queue to ensure all actions run in appropriate order (FIFO)
+      const isConfirm = await new Promise<boolean>((res, rej) => {
+        confirmAction(action, res, rej);
+      });
+      return isConfirm ? actions[action.name](action.value) : Promise.resolve();
     };
 
     // User Events
@@ -204,8 +197,7 @@ export default defineComponent({
           originalItem,
           itemToUpdate,
           source: SourceName.USER_MOVED_ITEM
-        },
-        toConfirm: true
+        }
       });
     };
 

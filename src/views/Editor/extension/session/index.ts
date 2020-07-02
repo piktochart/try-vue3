@@ -2,8 +2,8 @@ import * as firebase from "firebase/app";
 // Add the Firebase products that you want to use
 import "firebase/auth";
 import "firebase/database";
-import { Confirm, ActionParams, Initializer } from "../../";
-import { ActionName } from "../";
+import { Confirm, ActionParams, Initializer, CoreActionName } from "../../";
+import { ActionName, SourceName } from "../";
 import { onBeforeMount } from "vue";
 
 export enum SessionSourceName {
@@ -37,19 +37,31 @@ export async function session({
   const localQueue: string[] = [];
   // get the editor ID
   const id = props.id;
+  // action sources to confirm
+  const sourceToConfirm = {
+    [SourceName.USER_CLICK_CREATE]: true,
+    [SourceName.USER_MOVED_ITEM]: true,
+    [SourceName.USER_HISTORY_UNDO]: true,
+    [SourceName.USER_HISTORY_REDO]: true
+  };
 
   const dbRef = db.ref(`editor/${id}`);
   const confirm: Confirm = (params, res) => {
-    const sessionParam: ActionParams = {
-      ...params,
-      value: {
-        ...params.value,
-        uniqueIdentifier
-      },
-      toConfirm: false
-    };
-    dbRef.push(sessionParam);
-    res(false);
+    if (params.value.source in sourceToConfirm) {
+      const sessionParam: ActionParams = {
+        ...params,
+        value: {
+          ...params.value,
+          source: SourceName.SESSION_RESPONSE,
+          uniqueIdentifier
+        }
+      };
+      const uniqueKey = dbRef.push(sessionParam);
+      if (uniqueKey.key) {
+        localQueue.push(uniqueKey.key);
+      }
+    }
+    res(true);
   };
   setConfirmAction(confirm);
 
@@ -59,8 +71,7 @@ export async function session({
       name: ActionName.CLEAR_CANVAS,
       value: {
         source: SessionSourceName.SESSION_INIT
-      },
-      toConfirm: false
+      }
     };
     runAction(clearCanvasAction);
   });
@@ -72,9 +83,9 @@ export async function session({
     }
 
     const sessionParam: ActionParams = snapshot.val();
-    // if the session param is not from the user itself, treat it as session response
-    if (sessionParam.value.uniqueIdentifier !== uniqueIdentifier) {
-      sessionParam.value.source = SessionSourceName.SESSION_RESPONSE;
+    // if the session param is from the user itself, stop the process as it's already run locally
+    if (sessionParam.value.uniqueIdentifier === uniqueIdentifier) {
+      return;
     }
     // if the local action is ahead of the firebase action,
     // undo the local action until it matches the action of the previous key of the snapshot
@@ -86,8 +97,7 @@ export async function session({
         name: ActionName.UNDO_HISTORY,
         value: {
           source: SessionSourceName.SESSION_UNDO
-        },
-        toConfirm: false
+        }
       };
       runAction(undoAction);
       localQueue.pop();

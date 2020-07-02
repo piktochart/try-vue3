@@ -4,7 +4,7 @@
       Toolbar Icons
     </div>
     <div class="toolbar-content p-2 border-left">
-      Toolbar
+      Properties
       <div><button @click="onClickCreateImage">Add image</button></div>
       <div><button @click="onClickCreateText">Add text</button></div>
     </div>

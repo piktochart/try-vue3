@@ -26,8 +26,7 @@ export function toolbar({ runAction }: Initializer) {
       value: {
         item,
         source: SourceName.USER_CLICK_CREATE
-      },
-      toConfirm: true
+      }
     });
   };
 
@@ -50,8 +49,7 @@ export function toolbar({ runAction }: Initializer) {
       value: {
         item,
         source: SourceName.USER_CLICK_CREATE
-      },
-      toConfirm: true
+      }
     });
   };
 
