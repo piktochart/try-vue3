@@ -5,8 +5,7 @@ import ToolbarEditor from "./components/ToolbarEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
-import { useExtension, ActionName, SourceName, EventName } from "./extension";
-import { ItemTypes } from "@/module/canvas-item";
+import { useExtension, ActionName, SourceName } from "./extension";
 import { DeepPartial } from "utility-types";
 
 export type Confirm<T = Record<string, any>> = (
@@ -22,35 +21,6 @@ export type ActionValue<T = Record<string, any>> = {
 export interface ActionParams<T = Record<string, any>> {
   name: ActionName;
   value: ActionValue<T>;
-}
-
-export enum CoreSourceName {
-  USER_CLICK_CREATE = "user-click-create",
-  USER_MOUSEDOWN_ITEM = "user-mousedown-item",
-  USER_MOVING_ITEM = "user-moving-item",
-  USER_MOVED_ITEM = "user-moved-item",
-  USER_CLICK_HISTORY = "user-click-history"
-}
-
-export enum CoreActionName {
-  CREATE_ITEM = "create-item",
-  UPDATE_ITEM = "update-item",
-  UPDATE_ITEM_TEMP = "update-item-temp",
-  DELETE_ITEM = "delete-item",
-  CLEAR_CANVAS = "clear-canvas",
-  NEW_SELECTION = "new-selection",
-  ADD_SELECTION = "add-selection",
-  REMOVE_SELECTION = "remove-selection",
-  CLEAR_SELECTION = "clear-selection"
-}
-
-export enum CoreEventName {
-  ITEM_CREATED = "item-created",
-  ITEM_UPDATED = "item-updated",
-  ITEM_TEMP_UPDATED = "item-temp-updated",
-  ITEM_DELETED = "item-deleted",
-  CANVAS_CLEARED = "canvas-cleared",
-  ITEM_SELECTED = "item-selected"
 }
 
 export type ActionFunction<P = any, R = any> = (

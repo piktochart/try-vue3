@@ -4,7 +4,36 @@ import { useStore } from "vuex";
 import { Item } from "@/types/canvas";
 import { DeepPartial } from "utility-types";
 
-export function canvas({ registerAction, emitter }: Initializer) {
+export enum CoreSourceName {
+  USER_CLICK_CREATE = "user-click-create",
+  USER_MOUSEDOWN_ITEM = "user-mousedown-item",
+  USER_MOVING_ITEM = "user-moving-item",
+  USER_MOVED_ITEM = "user-moved-item",
+  USER_CLICK_HISTORY = "user-click-history"
+}
+
+export enum CoreActionName {
+  CREATE_ITEM = "create-item",
+  UPDATE_ITEM = "update-item",
+  UPDATE_ITEM_TEMP = "update-item-temp",
+  DELETE_ITEM = "delete-item",
+  CLEAR_CANVAS = "clear-canvas",
+  NEW_SELECTION = "new-selection",
+  ADD_SELECTION = "add-selection",
+  REMOVE_SELECTION = "remove-selection",
+  CLEAR_SELECTION = "clear-selection"
+}
+
+export enum CoreEventName {
+  ITEM_CREATED = "item-created",
+  ITEM_UPDATED = "item-updated",
+  ITEM_TEMP_UPDATED = "item-temp-updated",
+  ITEM_DELETED = "item-deleted",
+  CANVAS_CLEARED = "canvas-cleared",
+  ITEM_SELECTED = "item-selected"
+}
+
+export function core({ registerAction, emitter }: Initializer) {
   const store = useStore();
 
   // Init the core actions of the editor

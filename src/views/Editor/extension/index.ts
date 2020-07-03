@@ -1,8 +1,8 @@
-import { Initializer, CoreActionName, CoreSourceName, CoreEventName } from "..";
+import { Initializer } from "..";
+import { core, CoreActionName, CoreSourceName, CoreEventName } from "./core";
 import { history, HistoryActionName, HistorySourceName } from "./history";
 import { tracking } from "./tracking";
 import { session, SessionSourceName } from "./session";
-import { canvas } from "./canvas";
 import { toolbar } from "./toolbar";
 
 export type ActionName = CoreActionName | HistoryActionName;
@@ -25,7 +25,7 @@ export const EventName = {
 
 export function useExtension(vm: Initializer) {
   const refHistory = history(vm);
-  canvas(vm);
+  core(vm);
   tracking(vm);
   session(vm);
   const refToolbar = toolbar(vm);
