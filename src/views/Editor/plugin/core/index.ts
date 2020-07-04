@@ -60,10 +60,16 @@ export function core({ registerAction, emitter }: Initializer) {
 
   registerAction(
     ActionName.UPDATE_ITEM_TEMP,
-    async (params: ActionValue<{ itemTempToUpdate: DeepPartial<Item> }>) => {
-      const itemTempToUpdate = params.itemTempToUpdate;
+    async (
+      params: ActionValue<{ id: Item["id"]; value: DeepPartial<Item> }>
+    ) => {
+      const { id, value } = params;
       const updatedItem = await store.dispatch("canvas/updateItemTemp", {
-        itemTempToUpdate
+        id,
+        itemTemp: {
+          type: "modified",
+          value
+        }
       });
       emitter.emit(EventName.ITEM_TEMP_UPDATED, {
         ...params,
@@ -75,10 +81,13 @@ export function core({ registerAction, emitter }: Initializer) {
 
   registerAction(
     ActionName.UPDATE_ITEM,
-    async (params: ActionValue<{ itemToUpdate: DeepPartial<Item> }>) => {
-      const itemToUpdate = params.itemToUpdate;
+    async (
+      params: ActionValue<{ id: Item["id"]; value: DeepPartial<Item> }>
+    ) => {
+      const { id, value } = params;
       const updatedItem = await store.dispatch("canvas/updateItem", {
-        itemToUpdate
+        id,
+        item: value
       });
 
       emitter.emit(EventName.ITEM_UPDATED, {

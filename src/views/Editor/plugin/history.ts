@@ -56,8 +56,9 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
       const undoAction: ActionParams = {
         name: ActionName.UPDATE_ITEM,
         value: {
+          id: originalItem.id,
           originalItem: updatedItem,
-          itemToUpdate: originalItem,
+          value: originalItem,
           source: SourceName.USER_HISTORY_UNDO
         }
       };
@@ -65,8 +66,9 @@ export function history({ emitter, runAction, registerAction }: Initializer) {
       const redoAction: ActionParams = {
         name: ActionName.UPDATE_ITEM,
         value: {
+          id: originalItem.id,
           originalItem,
-          itemToUpdate: updatedItem,
+          value: updatedItem,
           source: SourceName.USER_HISTORY_REDO
         }
       };

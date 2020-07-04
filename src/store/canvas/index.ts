@@ -4,11 +4,19 @@ import { Blocks, BlockList, Item, Items, ItemList } from "@/types/canvas";
 import { DeepPartial } from "utility-types";
 import { isObjectEmpty } from "@/helper";
 
+interface TempItemModified {
+  type: "modified";
+  value?: DeepPartial<Omit<Item, "temp" | "id" | "type">>;
+}
+
+type TempItem = TempItemModified;
+
 export interface State {
   blocks: Blocks;
   blockList: BlockList;
   items: Items;
   itemList: ItemList;
+  itemsTemp: Record<Item["id"], TempItem>;
   selectedIds: Record<Item["id"], 1>;
 }
 
@@ -21,8 +29,9 @@ const getInitialState = (): State => ({
   },
   blockList: ["1"],
   items: {},
+  itemsTemp: {},
   itemList: [],
-  selectedIds: { "844679058": 1 }
+  selectedIds: {}
 });
 
 export const canvasModule: Module<State, any> = {
@@ -50,18 +59,19 @@ export const canvasModule: Module<State, any> = {
       );
       return item;
     },
-    updateItemTemp(state, itemParams: DeepPartial<Item>) {
-      const itemId = itemParams.id;
-      if (itemId) {
-        state.items[itemId].temp = state.items[itemId].temp || {};
-        state.items[itemId].temp = merge(state.items[itemId].temp, itemParams);
-      }
+    updateItemTemp(
+      state,
+      { id, itemTemp }: { id: Item["id"]; itemTemp: TempItem }
+    ) {
+      state.itemsTemp[id] = itemTemp;
     },
-    updateItem(state, itemParams: DeepPartial<Item>) {
-      const itemId = itemParams.id;
-      if (itemId) {
-        state.items[itemId] = merge(state.items[itemId], itemParams);
-        delete state.items[itemId].temp;
+    updateItem(
+      state,
+      { id, item }: { id: Item["id"]; item: DeepPartial<Item> }
+    ) {
+      if (id) {
+        state.items[id] = merge(state.items[id], item);
+        delete state.itemsTemp[id];
       }
     },
     clearCanvas(state) {
@@ -83,17 +93,17 @@ export const canvasModule: Module<State, any> = {
       return payload.newItem;
     },
     updateItemTemp({ state, commit }, payload) {
-      if (state.items[payload.itemTempToUpdate.id]) {
-        commit("updateItemTemp", payload.itemTempToUpdate);
-        return state.items[payload.itemTempToUpdate.id];
+      if (state.items[payload.id]) {
+        commit("updateItemTemp", payload);
+        return state.items[payload.id];
       } else {
         throw new Error("No updated item to be found!");
       }
     },
     updateItem({ state, commit }, payload) {
-      if (state.items[payload.itemToUpdate.id]) {
-        commit("updateItem", payload.itemToUpdate);
-        return state.items[payload.itemToUpdate.id];
+      if (state.items[payload.id]) {
+        commit("updateItem", payload);
+        return state.items[payload.id];
       } else {
         throw new Error("No updated item to be found!");
       }

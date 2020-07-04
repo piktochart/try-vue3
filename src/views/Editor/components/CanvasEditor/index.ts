@@ -16,6 +16,7 @@ export default defineComponent({
       blocks: computed(() => store.state.canvas.blocks),
       blockList: computed(() => store.state.canvas.blockList),
       items: computed(() => store.state.canvas.items),
+      itemsTemp: computed(() => store.state.canvas.itemsTemp),
       itemList: computed(() => store.state.canvas.itemList),
       selectedIds: computed(() => store.state.canvas.selectedIds),
       isSelectionEmpty: computed(() => store.getters["canvas/isSelectionEmpty"])
@@ -79,14 +80,23 @@ export default defineComponent({
   render() {
     const getItems = (itemList: ItemList) => {
       return itemList.map(itemId => {
-        const tempContainer = this.items[itemId].temp?.container;
-        const container = tempContainer
-          ? { ...this.items[itemId].container, ...tempContainer }
-          : this.items[itemId].container;
-        const tempContent = this.items[itemId].temp?.content;
-        const content = tempContent
-          ? { ...this.items[itemId].content, ...tempContent }
-          : this.items[itemId].content;
+        const tempItem = this.itemsTemp[itemId];
+        const { container, content } =
+          tempItem && tempItem.type === "modified"
+            ? {
+                container: {
+                  ...this.items[itemId].container,
+                  ...tempItem.value?.container
+                },
+                content: {
+                  ...this.items[itemId].content,
+                  ...tempItem.value?.content
+                }
+              }
+            : {
+                container: this.items[itemId].container,
+                content: this.items[itemId].content
+              };
 
         return h(
           itemComponents.CanvasItemContainer as any,

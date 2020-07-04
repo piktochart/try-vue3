@@ -135,8 +135,7 @@ export default defineComponent({
     const onMovingItem = (params: { x: number; y: number; item: Item }) => {
       const selectedItemId = Object.keys(canvasState.selectedIds.value)[0];
       const originalItem = canvasState.items.value[selectedItemId];
-      const itemTempToUpdate: DeepPartial<Item> = {
-        id: selectedItemId,
+      const value: DeepPartial<Item> = {
         container: {
           x: originalItem.container.x + params.x,
           y: originalItem.container.y + params.y
@@ -145,17 +144,17 @@ export default defineComponent({
       runAction({
         name: ActionName.UPDATE_ITEM_TEMP,
         value: {
+          id: selectedItemId,
           originalItem,
-          itemTempToUpdate,
+          value,
           source: SourceName.USER_MOVING_ITEM
         }
       });
     };
     const onMovedItem = (params: { x: number; y: number; item: Item }) => {
       const selectedItemId = Object.keys(canvasState.selectedIds.value)[0];
-      const { temp, ...originalItem } = canvasState.items.value[selectedItemId];
-      const itemToUpdate: DeepPartial<Item> = {
-        id: selectedItemId,
+      const originalItem = canvasState.items.value[selectedItemId];
+      const value: DeepPartial<Item> = {
         container: {
           x: originalItem.container.x + params.x,
           y: originalItem.container.y + params.y
@@ -164,8 +163,9 @@ export default defineComponent({
       runAction({
         name: ActionName.UPDATE_ITEM,
         value: {
+          id: selectedItemId,
           originalItem,
-          itemToUpdate,
+          value,
           source: SourceName.USER_MOVED_ITEM
         }
       });
