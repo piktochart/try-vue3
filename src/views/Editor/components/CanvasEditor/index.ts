@@ -65,9 +65,15 @@ export default defineComponent({
       document.addEventListener("mouseup", mouseUpItem);
     };
 
+    const onDropBlock = (e: DragEvent) => {
+      e.preventDefault();
+      emit("drop-block", e);
+    };
+
     return {
       ...canvasState,
-      onMouseDownItem
+      onMouseDownItem,
+      onDropBlock
     };
   },
   render() {
@@ -104,7 +110,9 @@ export default defineComponent({
       return h(
         "div",
         {
-          class: "block"
+          class: "block",
+          onDrop: (e: DragEvent) => this.onDropBlock(e),
+          onDragOver: (e: DragEvent) => e.preventDefault()
         },
         getItems(this.blocks[blockId].items)
       );

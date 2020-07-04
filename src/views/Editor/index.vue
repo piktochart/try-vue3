@@ -22,6 +22,7 @@
             @mousedown-item="onMouseDownItem"
             @moving-item="onMovingItem"
             @moved-item="onMovedItem"
+            @drop-block="onDropBlock"
           />
         </div>
       </div>

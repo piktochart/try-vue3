@@ -30,7 +30,8 @@ export enum CoreEventName {
   ITEM_TEMP_UPDATED = "item-temp-updated",
   ITEM_DELETED = "item-deleted",
   CANVAS_CLEARED = "canvas-cleared",
-  ITEM_SELECTED = "item-selected"
+  ITEM_SELECTED = "item-selected",
+  DROPPED_ON_BLOCK = "dropped-on-block"
 }
 
 export function core({ registerAction, emitter }: Initializer) {

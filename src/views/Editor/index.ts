@@ -5,7 +5,7 @@ import ToolbarEditor from "./components/ToolbarEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
-import { usePlugin, ActionName, SourceName } from "./plugin";
+import { usePlugin, ActionName, SourceName, EventName } from "./plugin";
 import { DeepPartial } from "utility-types";
 
 export type Confirm<T = Record<string, any>> = (
@@ -171,6 +171,10 @@ export default defineComponent({
       });
     };
 
+    const onDropBlock = (e: DragEvent) => {
+      emitter.emit(EventName.DROPPED_ON_BLOCK, e);
+    };
+
     // Init Plugins
     const pluginRef = usePlugin({
       emitter,
@@ -186,7 +190,8 @@ export default defineComponent({
       onClickUndo,
       onClickRedo,
       onMovingItem,
-      onMovedItem
+      onMovedItem,
+      onDropBlock
     };
     return toReturn;
   }
