@@ -23,7 +23,7 @@ export const EventName = {
   ...CoreEventName
 };
 
-export function useExtension(vm: Initializer) {
+export function usePlugin(vm: Initializer) {
   const refHistory = history(vm);
   core(vm);
   tracking(vm);

@@ -5,7 +5,7 @@ import ToolbarEditor from "./components/ToolbarEditor/index.vue";
 import { canvasModule, State as CanvasState } from "@/store/canvas";
 import { Item } from "@/types/canvas";
 import mitt from "mitt";
-import { useExtension, ActionName, SourceName } from "./extension";
+import { usePlugin, ActionName, SourceName } from "./plugin";
 import { DeepPartial } from "utility-types";
 
 export type Confirm<T = Record<string, any>> = (
@@ -171,8 +171,8 @@ export default defineComponent({
       });
     };
 
-    // Init Extensions
-    const ext = useExtension({
+    // Init Plugins
+    const pluginRef = usePlugin({
       emitter,
       props,
       setConfirmAction,
@@ -181,7 +181,7 @@ export default defineComponent({
     });
 
     const toReturn = {
-      ...ext,
+      ...pluginRef,
       onMouseDownItem,
       onClickUndo,
       onClickRedo,
