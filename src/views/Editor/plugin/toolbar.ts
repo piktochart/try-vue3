@@ -4,13 +4,22 @@ import { getId } from "@/helper";
 import { Item } from "@/types/canvas";
 import { ItemTypes } from "@/module/canvas-item";
 import { ActionName, SourceName, EventName } from ".";
-import { markRaw, reactive } from "vue";
+import { markRaw, reactive, computed } from "vue";
+import { useStore } from "vuex";
+import { State as CanvasState } from "@/store/canvas";
 
 interface ToolbarState {
   draggedImage: null | string;
 }
 
 export function toolbar({ runAction, emitter }: Initializer) {
+  const store = useStore<{ canvas: CanvasState }>();
+  // Store Getters
+  const canvasState = {
+    itemList: computed(() => store.state.canvas.itemList),
+    items: computed(() => store.state.canvas.items)
+  };
+
   const toolbarState = reactive<ToolbarState>({
     draggedImage: null
   });
@@ -64,6 +73,10 @@ export function toolbar({ runAction, emitter }: Initializer) {
   const dragImage = (e: DragEvent) => {
     toolbarState.draggedImage = (e.target as HTMLImageElement).src;
   };
+
+  emitter.on(EventName.DRAGOVER_ON_BLOCK, (e: DragEvent) => {
+    console.log(e);
+  });
 
   emitter.on(EventName.DROPPED_ON_BLOCK, (e: DragEvent) => {
     if (toolbarState.draggedImage) {

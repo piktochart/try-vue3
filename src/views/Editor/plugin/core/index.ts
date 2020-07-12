@@ -31,6 +31,7 @@ export enum CoreEventName {
   ITEM_DELETED = "item-deleted",
   CANVAS_CLEARED = "canvas-cleared",
   ITEM_SELECTED = "item-selected",
+  DRAGOVER_ON_BLOCK = "dragover-on-block",
   DROPPED_ON_BLOCK = "dropped-on-block"
 }
 

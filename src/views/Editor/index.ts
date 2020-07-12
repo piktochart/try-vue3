@@ -171,6 +171,10 @@ export default defineComponent({
       });
     };
 
+    const onDragOverBlock = (e: DragEvent) => {
+      emitter.emit(EventName.DRAGOVER_ON_BLOCK, e);
+    };
+
     const onDropBlock = (e: DragEvent) => {
       emitter.emit(EventName.DROPPED_ON_BLOCK, e);
     };
@@ -191,7 +195,8 @@ export default defineComponent({
       onClickRedo,
       onMovingItem,
       onMovedItem,
-      onDropBlock
+      onDropBlock,
+      onDragOverBlock
     };
     return toReturn;
   }

@@ -68,13 +68,21 @@ export default defineComponent({
 
     const onDropBlock = (e: DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       emit("drop-block", e);
+    };
+
+    const onDragOverBlock = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      emit("dragover-block", e);
     };
 
     return {
       ...canvasState,
       onMouseDownItem,
-      onDropBlock
+      onDropBlock,
+      onDragOverBlock
     };
   },
   render() {
@@ -122,7 +130,7 @@ export default defineComponent({
         {
           class: "block",
           onDrop: (e: DragEvent) => this.onDropBlock(e),
-          onDragOver: (e: DragEvent) => e.preventDefault()
+          onDragOver: (e: DragEvent) => this.onDragOverBlock(e)
         },
         getItems(this.blocks[blockId].items)
       );
